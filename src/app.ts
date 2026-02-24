@@ -3,6 +3,7 @@ import cors from "@fastify/cors"
 import { env } from "./env";
 import fastifyJwt from "@fastify/jwt";
 import { UsersRoutes } from "./routes/users.routes";
+import { MealsRoutes } from "./routes/meals.routes";
 
 
 
@@ -14,4 +15,4 @@ app.register(fastifyJwt, {
 })
 
 app.register(UsersRoutes)
-// app.register(mealsRoutes)
+app.register(MealsRoutes)
