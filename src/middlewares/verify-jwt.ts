@@ -1,3 +1,4 @@
+import { AppError } from '@/errors/app-error'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 export async function verifyJWT(
@@ -7,6 +8,6 @@ export async function verifyJWT(
   try {
     await request.jwtVerify()
   } catch {
-    return reply.status(401).send({ message: 'Unauthorized' })
+    throw new AppError("Unauthorized", 401)
   }
 }

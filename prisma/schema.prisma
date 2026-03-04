@@ -18,18 +18,133 @@ enum Role {
   PATIENT
 }
 
+enum PatientStatus {
+  ACTIVE
+  INACTIVE
+  PAUSED
+}
+
+enum Goal {
+  WEIGHT_LOSS
+  HYPERTROPHY
+  REEDUCATION
+  MAINTENANCE
+}
+
 model User {
   id       String @id @default(uuid())
   name     String
   email    String @unique
   password String
-  role     Role   @default(PATIENT)
-  meals    Meal[]
+  role     Role
+
+  nutritionistProfile NutritionistProfile?
+  patientProfile      PatientProfile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model NutritionistProfile {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  crn       String?
+  specialty String?
+  clinic    String?
+  phone     String?
+
+  patients PatientProfile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("nutritionists")
+}
+
+model PatientProfile {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  nutritionistId String
+  nutritionist   NutritionistProfile @relation(fields: [nutritionistId], references: [id], onDelete: Cascade)
+
+  status PatientStatus @default(ACTIVE)
+  goal   Goal
+
+  birthDate    DateTime?
+  height       Float? // cm
+  targetWeight Float?
+
+  observation String?
+
+  mealPlans MealPlan[]
+  meals     Meal[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  bodyMetrics BodyMetrics[]
+
+  @@index([nutritionistId])
+  @@map("patients")
+}
+
+model MealPlan {
+  id String @id @default(uuid())
+
+  patientId String
+  patient   PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+
+  caloriesTarget Int?
+  proteinTarget  Float?
+  carbsTarget    Float?
+  fatTarget      Float?
+
+  startDate DateTime
+  endDate   DateTime?
+
+  isActive Boolean @default(true)
+
+  meals MealPlanItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([patientId, isActive])
+  @@map("meal_plans")
+}
+
+model MealPlanItem {
+  id String @id @default(uuid())
+
+  mealPlanId String
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  order       Int
+  time        DateTime
+
+  targetCalories Int?
+  targetProtein  Float?
+  targetCarbs    Float?
+  targetFat      Float?
+  meals          Meal[]
+
+  createdAt DateTime @default(now())
+
+  @@index([mealPlanId])
+  @@map("meal_plan_items")
 }
 
 model Meal {
@@ -39,14 +154,38 @@ model Meal {
   date        DateTime
   isOnDiet    Boolean  @map("is_on_diet")
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String @map("user_id")
+  patientProfile   PatientProfile @relation(fields: [patientProfileId], references: [id])
+  patientProfileId String
+
+  mealPlanItemId String?
+  mealPlanItem   MealPlanItem? @relation(fields: [mealPlanItemId], references: [id])
+
+  consumedCalories Int?
+  consumedProtein  Float?
+  consumedCarbs    Float?
+  consumedFat      Float?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
-  @@index([userId, date])
-  @@index([userId, isOnDiet])
+  @@index([patientProfileId])
+  @@index([patientProfileId, date])
+  @@index([patientProfileId, isOnDiet])
   @@map("meals")
+}
+
+model BodyMetrics {
+  id String @id @default(uuid())
+
+  patientId String
+  patient   PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  weight     Float?
+  bodyFat    Float?
+  muscleMass Float?
+
+  recordedAt DateTime @default(now())
+
+  @@index([patientId, recordedAt])
+  @@map("body_metrics")
 }

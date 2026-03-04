@@ -7,7 +7,8 @@ export class UserRepository {
         })
     }
 
-    async create(data: {name: string, email: string, password: string}) {
+    async create(data: {name: string, email: string, password: string, role: "ADMIN" | "PATIENT"}) {
+        
         return prisma.user.create({data})
     }
 }

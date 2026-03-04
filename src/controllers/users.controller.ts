@@ -8,15 +8,18 @@ export class UsersController {
         const bodySchema = z.object({
             name: z.string(),
             email: z.email(),
-            password: z.string().min(6)
+            password: z.string().min(6),
+            role: z.enum(["ADMIN", "PATIENT"]).default("ADMIN")
         })
 
-        const {name, email, password} = bodySchema.parse(request.body)
+        const {name, email, password, role} = bodySchema.parse(request.body)
+        
+        
 
         const usersRepository = new UserRepository()
         const userService = new UserService(usersRepository)
 
-        await userService.register({name, email, password})
+        await userService.register({name, email, password, role})
 
         return reply.status(201).send()
     }

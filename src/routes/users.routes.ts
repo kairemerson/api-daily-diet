@@ -7,4 +7,5 @@ export async function UsersRoutes(app: FastifyInstance) {
 
     app.post("/users", usersController.register)
     app.post("/sessions", usersController.login)
+
 }

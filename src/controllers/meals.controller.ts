@@ -11,19 +11,24 @@ export class MealsController {
             name: z.string(),
             description: z.string().optional(),
             date: z.coerce.date(),
-            isOnDiet: z.boolean()
+            isOnDiet: z.boolean(),
+            mealPlanItemId: z.string().optional(),
+            consumedCalories: z.number().optional(),
+            consumedProtein: z.number().optional(),
+            consumedCarbs: z.number().optional(),
+            consumedFat: z.number().optional(),
         })
 
-        const {name, description, date, isOnDiet} = bodySchema.parse(request.body)
+        const data = bodySchema.parse(request.body)
 
-        const user_id = request.user.sub
+        const userId = request.user.sub
 
         const mealsRepository = new MealsRepository()
         const mealService = new MealsService(mealsRepository)
 
-        await mealService.create({name, description, date, isOnDiet, userId: user_id})
+        const meal = await mealService.create(data, userId)
 
-        return reply.status(201).send()
+        return reply.status(201).send(meal)
     }
 
     async list(request: FastifyRequest, reply: FastifyReply) {

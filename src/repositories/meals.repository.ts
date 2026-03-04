@@ -6,7 +6,12 @@ type CreateMealData = {
     description?: string
     date: Date
     isOnDiet: boolean
-    userId: string
+    patientProfileId: string
+    mealPlanItemId?: string
+    consumedCalories?: number
+    consumedProtein?: number
+    consumedCarbs?: number
+    consumedFat?: number
 }
 
 type UpdateMealData = {

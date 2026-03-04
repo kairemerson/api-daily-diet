@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs"
 export class UserService {
     constructor(private usersRepository: UserRepository){}
 
-    async register(data: {name: string, email: string, password: string}) {
+    async register(data: {name: string, email: string, password: string, role: "ADMIN" | "PATIENT"}) {
         const userAlreadyExists = await this.usersRepository.findByEmail(data.email)
 
         if(userAlreadyExists) {
