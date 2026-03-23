@@ -8,7 +8,7 @@ interface CreateRequest {
     name: string
     description?: string
     order: number
-    time: Date
+    time: string
     targetCalories?: number
     targetProtein?: number
     targetCarbs?: number

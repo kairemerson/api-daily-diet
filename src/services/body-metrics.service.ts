@@ -43,8 +43,11 @@ export class BodyMetricsService {
         const { adminUserId, ...bodyMetricsData } = data
 
         return this.bodyMetricsRepository.create({
+            patientId: patient.id,
+            weight: data.weight,
+            bodyFat: data.bodyFat,
+            muscleMass: data.muscleMass,
             recordedAt: data.recordedAt ?? new Date(),
-            ...bodyMetricsData
         })
     }
 

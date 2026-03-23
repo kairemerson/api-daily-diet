@@ -1,11 +1,13 @@
 import { AppError } from "@/errors/app-error";
+import { buildDate, dateToLocalString } from "@/helpers/build-dates";
 import { prisma } from "@/lib/prisma";
 import { MealsRepository } from "@/repositories/meals.repository";
 
 interface CreateMealRequest {
     name: string
     description?: string
-    date: Date
+    date: string
+    time: string
     isOnDiet: boolean
     mealPlanItemId?: string
     consumedCalories?: number
@@ -15,18 +17,39 @@ interface CreateMealRequest {
 }
 
 interface UpdateMealRequest {
-  name: string
-  description?: string
-  date: Date
-  isOnDiet: boolean
+    name: string
+    description?: string
+    date: string
+    time: string
+    isOnDiet: boolean
+    consumedCalories?: number
+    consumedProtein?: number
+    consumedCarbs?: number
+    consumedFat?: number
 }
-
-
 
 export class MealsService {
     constructor(private mealsRepository: MealsRepository) {}
 
     async create(data: CreateMealRequest, userId: string) {
+
+        const [day, month, year] = data.date.split("/")
+        const isoDate = `${year}-${month}-${day}`
+
+        const dateTime = new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(data.time.split(":")[0]),
+            Number(data.time.split(":")[1])
+        )
+
+        const now = new Date()
+
+        if(dateTime.getTime() > now.getTime()) {
+            throw new AppError("Não é permitido registrar refeição no futuro")
+        }
+
 
         // Se NÃO tem mealPlanItem → só verifica se paciente existe
         if (!data.mealPlanItemId) {
@@ -40,8 +63,18 @@ export class MealsService {
             }
 
             return this.mealsRepository.create({
-                ...data,
-                patientProfileId: patient.id
+                name: data.name,
+                description: data.description,
+                isOnDiet: data.isOnDiet,
+                date: isoDate,
+                time: data.time,
+                dateTime,
+                mealPlanItemId: data.mealPlanItemId,
+                consumedCalories: data.consumedCalories,
+                consumedProtein: data.consumedProtein,
+                consumedCarbs: data.consumedCarbs,
+                consumedFat: data.consumedFat,
+                patientProfileId: patient.id,
             })
         }
 
@@ -69,42 +102,173 @@ export class MealsService {
         }
 
         return this.mealsRepository.create({
-            ...data,
+            name: data.name,
+            description: data.description,
+            isOnDiet: data.isOnDiet,
+            date: isoDate,
+            time: data.time,
+            dateTime,
+            mealPlanItemId: data.mealPlanItemId,
+            consumedCalories: data.consumedCalories,
+            consumedProtein: data.consumedProtein,
+            consumedCarbs: data.consumedCarbs,
+            consumedFat: data.consumedFat,
             patientProfileId: mealPlanItem.mealPlan.patientId
         })
     }
 
-    async listByUser(userId: string) {
-        return this.mealsRepository.findManyByUserId(userId)
+    async listByUserId(userId: string) {
+        const patient = await prisma.patientProfile.findUnique({
+            where: { userId }
+        })
+
+        if (!patient) {
+            throw new AppError("Perfil de paciente não encontrado")
+        }
+
+        const meals = await this.mealsRepository.findManyByPatientId(patient.id)
+
+        const grouped: Record<string, typeof meals> = {}
+
+        for (const meal of meals) {
+            const dateKey = dateToLocalString(meal.dateTime)
+
+            if (!grouped[dateKey]) {
+                grouped[dateKey] = []
+            }
+
+            grouped[dateKey].push(meal)
+        }
+
+        const sections = Object.keys(grouped)
+            .sort((a, b) => b.localeCompare(a)) // dias DESC
+            .map(date => ({
+                title: date,
+                data: grouped[date]
+            }))
+
+        return sections
     }
 
     async getById(id: string, userId: string) {
-        const meal = await this.mealsRepository.findByIdAndUserId(id, userId)
+        const patient = await prisma.patientProfile.findUnique({
+            where: { userId }
+        })
+
+        if (!patient) {
+            throw new AppError("Perfil de paciente não encontrado.")
+        }
+
+        const meal = await this.mealsRepository.findByIdAndPatientId(id, patient.id)
         
         if(!meal) {
-            throw new Error("Meal not found")
+            throw new Error("Refeição não encontrada.")
         }
 
         return meal
     }
 
-    async update(id: string, userId: string, data: UpdateMealRequest) {
-        const meal = await this.mealsRepository.findByIdAndUserId(id, userId)
+    async getByPatientId(id: string, userId: string) {
 
-        if(!meal) {
-            throw new Error("Meal not found")
+        const admin = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { nutritionistProfile: true }
+        })
+
+        if (!admin || admin.role !== "ADMIN") {
+            throw new AppError("Apenas ADMIN pode buscar refeições do paciente.")
         }
 
-        return this.mealsRepository.update(id, data)
+        if (!admin.nutritionistProfile) {
+            throw new AppError("Perfil do nutricionista não encontrado.")
+        }
+
+        const patient = await prisma.patientProfile.findUnique({
+            where: { 
+                id, 
+                nutritionistId: admin.nutritionistProfile.id
+            }
+        })
+
+        if (!patient) {
+            throw new AppError("Perfil de paciente não encontrado.")
+        }
+
+        const meals = await this.mealsRepository.findByPatientId(patient.id)
+
+        const grouped: Record<string, typeof meals> = {}
+
+        for (const meal of meals) {
+            const dateKey = dateToLocalString(meal.dateTime)
+
+            if (!grouped[dateKey]) {
+                grouped[dateKey] = []
+            }
+
+            grouped[dateKey].push(meal)
+        }
+
+        const sections = Object.entries(grouped)
+            .sort(([a], [b]) => b.localeCompare(a)) //dias desc
+            .map(([date, data]) => ({
+                title: date,
+                data
+            }))
+
+        return sections
+    }
+
+    async update(id: string, userId: string, data: UpdateMealRequest) {
+        const [day, month, year] = data.date.split("/")
+        const isoDate = `${year}-${month}-${day}`
+
+        const dataDate = new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(data.time.split(":")[0]),
+            Number(data.time.split(":")[1])
+        )
+
+        const now = new Date()
+
+        if(dataDate.getTime() > now.getTime()) {
+            throw new AppError("Não é permitido registrar refeição no futuro")
+        }
+
+        const patient = await prisma.patientProfile.findUnique({
+            where: { userId }
+        })
+
+        if (!patient) {
+            throw new AppError("Perfil de paciente não encontrado.")
+        }
+
+        const meal = await this.mealsRepository.findByIdAndPatientId(id, patient.id)
+
+        if(!meal) {
+            throw new AppError("Refeição não encontrada.")
+        }
+
+        return this.mealsRepository.update(id, {...data, date: isoDate})
     }
 
     async delete(id: string, userId: string){
-        const meal = await this.mealsRepository.findByIdAndUserId(id, userId)
 
-        if(!meal) {
-            throw new Error("Meal not found")
+        const patient = await prisma.patientProfile.findUnique({
+            where: { userId }
+        })
+
+        if (!patient) {
+            throw new AppError("Perfil de paciente não encontrado.")
         }
 
-        await this.mealsRepository.delete(id)
+        const meal = await this.mealsRepository.findByIdAndPatientId(id, patient.id)
+
+        if(!meal) {
+            throw new AppError("Refeição não encontrada.")
+        }
+
+        await this.mealsRepository.delete(meal.id)
     }
 }

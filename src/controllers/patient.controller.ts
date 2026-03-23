@@ -85,4 +85,34 @@ export class PatientController {
         return reply.status(200).send(dashboard)
 
     }
+
+    async updatePatientStatus(request: FastifyRequest, reply: FastifyReply){
+        
+        const paramsSchema = z.object({
+            id: z.string().uuid()
+        })
+
+        const bodySchema = z.object({
+            status: z.enum(["ACTIVE", "INACTIVE", "PAUSED"])
+        })
+
+        const {id} = paramsSchema.parse(request.params)
+        const {status} = bodySchema.parse(request.body)
+
+        const adminUserId = request.user.sub                
+
+        const repository = new PatientRepository()
+        const service = new PatientProfileService(repository)
+
+        await service.updatePatientStatus({
+            adminUserId,
+            patientId: id,
+            status
+        })
+
+        return reply.status(204).send()
+
+    }
+
+
 }

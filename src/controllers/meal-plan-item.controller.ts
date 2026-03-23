@@ -12,7 +12,7 @@ export class MealPlanItemController {
             name: z.string(),
             description: z.string().optional(),
             order: z.number().int(),
-            time: z.coerce.date(),
+            time: z.string(),
             targetCalories: z.number().optional(),
             targetProtein: z.number().optional(),
             targetCarbs: z.number().optional(),

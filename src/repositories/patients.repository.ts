@@ -1,4 +1,6 @@
+import { dateToLocalString } from "@/helpers/build-dates"
 import { prisma } from "@/lib/prisma"
+import { PatientStatus } from "@prisma/client"
 
 interface CreatePatientData {
   user: {
@@ -69,19 +71,28 @@ export class PatientRepository {
       const patientIds = patients.map(p => p.id)
 
       if (patientIds.length === 0) {
-        return []
+        return {
+          patients: [],
+          mealStats: [],
+          lastActivity: []
+        }
       }
 
-      // Buscar refeições apenas de planos ativos
+      // Buscar refeições pelo periodo
+      const thirdDaysAgo = new Date()
+      thirdDaysAgo.setHours(0,0,0,0)
+      thirdDaysAgo.setDate(thirdDaysAgo.getDate() - 30)
+
+      const thirdDaysAgoStr = dateToLocalString(thirdDaysAgo)
+
       const mealStats = await prisma.meal.groupBy({
         by: ["patientProfileId", "isOnDiet"],
         where: {
           patientProfileId: { in: patientIds },
-          mealPlanItem: {
-            mealPlan: {
-              isActive: true,
-            },
+          date: {
+            gte: thirdDaysAgoStr
           },
+          
         },
         _count: true,
       })
@@ -98,15 +109,22 @@ export class PatientRepository {
           },
         },
         _max: {
-          createdAt: true,
+          dateTime: true,
         },
       })
-
+      
       return {
         patients,
         mealStats,
         lastActivity,
       }
+    }
+
+    async updatePatientStatus(patientId: string, status: PatientStatus) {
+      await prisma.patientProfile.update({
+        where: {id: patientId},
+        data: {status}
+      })
     }
 
 }

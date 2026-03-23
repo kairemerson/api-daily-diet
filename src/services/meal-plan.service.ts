@@ -20,6 +20,18 @@ interface FindByPatientIdRequest {
   patientId: string
 }
 
+interface UpdateMealPlanRequest {
+    patientId: string
+    title: string
+    description?: string
+    caloriesTarget?: number
+    proteinTarget?: number
+    carbsTarget?: number
+    fatTarget?: number
+    startDate: Date
+    endDate?:   Date
+}
+
 export class MealPlanService {
     constructor(private mealPlanRepository: MealPlanRepository){}
 
@@ -76,7 +88,62 @@ export class MealPlanService {
             throw new AppError("Paciente não pertence ao Nutricionista!")
         }
 
-        return this.mealPlanRepository.findByPatientId(patientId)
+        return this.mealPlanRepository.findByPatientId(patient.id)
+    }
+
+    async findById({adminUserId, mealPlanId}: {adminUserId: string, mealPlanId: string}) {
+        const admin = await prisma.user.findUnique({
+            where: {id: adminUserId},
+            include: {nutritionistProfile: true}
+        })
+
+        if(!admin || admin.role !== "ADMIN") {
+            throw new AppError("Somente ADMIN pode visualizar planos!")
+        }
+
+        if(!admin.nutritionistProfile) {
+            throw new AppError("Perfil do nutricionista não encontrado!")
+        }
+
+        const patient = await prisma.patientProfile.findFirst({
+            where: {
+                nutritionistId: admin.nutritionistProfile.id
+            }
+        })
+
+        if (!patient) {
+            throw new AppError("Paciente não pertence ao Nutricionista!")
+        }
+
+        return this.mealPlanRepository.findById(mealPlanId)
+    }
+
+    async update(adminUserId: string, mealPlanId: string, data: UpdateMealPlanRequest) {
+        const admin = await prisma.user.findUnique({
+            where: {id: adminUserId},
+            include: {nutritionistProfile: true}
+        })
+
+        if(!admin || admin.role !== "ADMIN") {
+            throw new AppError("Somente ADMIN pode criar plano alimentar!")
+        }
+
+        if(!admin.nutritionistProfile) {
+            throw new AppError("Perfil do nutricionista não encontrado!")
+        }
+
+        const patient = await prisma.patientProfile.findFirst({
+            where: {
+                id: data.patientId,
+                nutritionistId: admin.nutritionistProfile.id,
+            },
+        })
+
+        if (!patient) {
+            throw new AppError("Paciente não pertence ao Nutricionista!")
+        }
+
+        return this.mealPlanRepository.update(mealPlanId, data)
     }
 
 }

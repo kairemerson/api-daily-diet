@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma"
 
-
 type CreateMealData = {
     name: string
     description?: string
-    date: Date
+    date: string
+    time: string
+    dateTime: Date
     isOnDiet: boolean
     patientProfileId: string
     mealPlanItemId?: string
@@ -17,31 +18,49 @@ type CreateMealData = {
 type UpdateMealData = {
     name: string
     description?: string
-    date: Date
+    date: string
+    time: string
     isOnDiet: boolean
+    consumedCalories?: number
+    consumedProtein?: number
+    consumedCarbs?: number
+    consumedFat?: number
 }
 
 export class MealsRepository {
     async create(data: CreateMealData) {
-        return prisma.meal.create({data})
+        
+        return prisma.meal.create({ data })
     }
 
-    async findManyByUserId(userId: string) {
+    async findManyByPatientId(patientId: string) {
         return prisma.meal.findMany({
             where: {
-                userId
+                patientProfileId: patientId
             },
             orderBy: {
-                date: "desc"
+                dateTime: "desc"
             }
         })
     }
 
-    async findByIdAndUserId(id: string, userId: string) {
+    async findByPatientId(patientId: string) {
+
+        return prisma.meal.findMany({
+            where: {
+                patientProfileId: patientId,
+            },
+            orderBy: {
+                dateTime: "desc"
+            }
+        })
+    }
+
+    async findByIdAndPatientId(id: string, patientId: string) {
         return prisma.meal.findFirst({
             where: {
                 id,
-                userId
+                patientProfileId: patientId
             }
         })
     }

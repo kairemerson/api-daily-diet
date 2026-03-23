@@ -10,8 +10,9 @@ export async function MealsRoutes(app: FastifyInstance) {
     app.addHook("onRequest", verifyJWT)
 
     app.post("/meals", mealsController.create)
-    app.get("/meals",  mealsController.list)
-    app.get("/meals/:id", mealsController.get)
+    app.get("/meals",  mealsController.listByUserId)
+    app.get("/meals/:id", mealsController.getById)
+    app.get("/meals/patient/:patientId", mealsController.getByPatientId)
     app.put("/meals/:id", mealsController.update)
     app.delete("/meals/:id", mealsController.delete)
     app.get("/meals/metrics", mealsController.metrics)

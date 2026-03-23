@@ -5,7 +5,7 @@ interface CreateMealPlanItemData {
     name: string
     description?: string
     order: number
-    time: Date
+    time: string
     targetCalories?: number
     targetProtein?: number
     targetCarbs?: number
@@ -14,6 +14,9 @@ interface CreateMealPlanItemData {
 
 export class MealPLanItemRepository {
     async create(data: CreateMealPlanItemData) {
+
+        
+        
         return prisma.mealPlanItem.create({
             data: {
                 mealPlanId: data.mealPlanId,

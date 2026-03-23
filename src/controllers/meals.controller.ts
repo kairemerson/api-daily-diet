@@ -10,7 +10,8 @@ export class MealsController {
         const bodySchema = z.object({
             name: z.string(),
             description: z.string().optional(),
-            date: z.coerce.date(),
+            date: z.string(),
+            time: z.string(),
             isOnDiet: z.boolean(),
             mealPlanItemId: z.string().optional(),
             consumedCalories: z.number().optional(),
@@ -19,9 +20,9 @@ export class MealsController {
             consumedFat: z.number().optional(),
         })
 
-        const data = bodySchema.parse(request.body)
+        const data = bodySchema.parse(request.body)        
 
-        const userId = request.user.sub
+        const userId = request.user.sub        
 
         const mealsRepository = new MealsRepository()
         const mealService = new MealsService(mealsRepository)
@@ -31,18 +32,18 @@ export class MealsController {
         return reply.status(201).send(meal)
     }
 
-    async list(request: FastifyRequest, reply: FastifyReply) {
+    async listByUserId(request: FastifyRequest, reply: FastifyReply) {
         const userId = request.user.sub
 
         const mealsRepository = new MealsRepository()
         const mealService = new MealsService(mealsRepository)
 
-        const meals = await mealService.listByUser(userId)        
+        const meals = await mealService.listByUserId(userId)        
 
-        return reply.send(meals)
+        return reply.status(200).send(meals)
     }
 
-    async get(request: FastifyRequest, reply: FastifyReply) {
+    async getById(request: FastifyRequest, reply: FastifyReply) {
         const paramsSchema = z.object({
             id: z.string()
         })
@@ -50,16 +51,34 @@ export class MealsController {
         const {id} = paramsSchema.parse(request.params)
 
         const userId = request.user.sub
-
+        
         const mealsRepository = new MealsRepository()
         const mealService = new MealsService(mealsRepository)
 
-        try {
-            const meal = await mealService.getById(id, userId)
-            return reply.send(meal)
-        } catch {
-            return reply.status(404).send({ message: "Meal not found" })
-        }
+        
+        const meal = await mealService.getById(id, userId)
+
+        return reply.status(200).send(meal)
+        
+
+    }
+
+    async getByPatientId(request: FastifyRequest, reply: FastifyReply) {
+        const paramsSchema = z.object({
+            patientId: z.string()
+        })
+        
+        const {patientId} = paramsSchema.parse(request.params)
+
+        const userId = request.user.sub
+        
+        const mealsRepository = new MealsRepository()
+        const mealService = new MealsService(mealsRepository)
+
+        const meal = await mealService.getByPatientId(patientId, userId)
+        
+        return reply.status(200).send(meal)
+        
 
     }
 
@@ -71,8 +90,13 @@ export class MealsController {
         const bodySchema = z.object({
             name: z.string(),
             description: z.string().optional(),
-            date: z.coerce.date(),
-            isOnDiet: z.boolean()
+            date: z.string(),
+            time: z.string(),
+            isOnDiet: z.boolean(),
+            consumedCalories: z.number().optional(),
+            consumedProtein: z.number().optional(),
+            consumedCarbs: z.number().optional(),
+            consumedFat: z.number().optional(),
         })
 
         const {id} = paramsSchema.parse(request.params)
@@ -83,12 +107,10 @@ export class MealsController {
         const mealsRepository = new MealsRepository()
         const mealService = new MealsService(mealsRepository)
 
-        try {
-            const meal = await mealService.update(id, userId, data)
-            return reply.send(meal)
-        } catch {
-            return reply.status(404).send({ message: "Meal not found" })
-        }
+        const meal = await mealService.update(id, userId, data)
+            
+        return reply.status(200).send(meal)
+       
 
     }
 
@@ -104,12 +126,9 @@ export class MealsController {
         const mealsRepository = new MealsRepository()
         const mealService = new MealsService(mealsRepository)
 
-        try {
-            await mealService.delete(id, userId)
-            return reply.status(204).send()
-        } catch {
-            return reply.status(404).send({ message: "Meal not found" })
-        }
+        await mealService.delete(id, userId)
+
+        return reply.status(204).send()
 
     }
 

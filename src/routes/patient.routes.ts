@@ -13,4 +13,5 @@ export async function PatientRoutes(app: FastifyInstance) {
 
     app.get("/patients/:patientId/dashboard", patientController.dashboard)
     app.get("/patients/me/dashboard", patientController.patientDashboard)
+    app.patch("/patients/:id/status", patientController.updatePatientStatus)
 }
