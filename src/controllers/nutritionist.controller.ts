@@ -1,4 +1,4 @@
-import { NutritionistProfileService } from "@/services/nutritionist.service";
+import { NutritionistProfileService } from "../services/nutritionist.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod"
 

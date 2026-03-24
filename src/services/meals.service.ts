@@ -1,7 +1,7 @@
-import { AppError } from "@/errors/app-error";
-import { buildDate, dateToLocalString } from "@/helpers/build-dates";
-import { prisma } from "@/lib/prisma";
-import { MealRepository } from "@/repositories/meal-repository.interface";
+import { AppError } from "../errors/app-error";
+import { buildDate, dateToLocalString } from "../helpers/build-dates";
+import { prisma } from "../lib/prisma";
+import { MealRepository } from "../repositories/meal-repository.interface";
 
 interface CreateMealRequest {
     name: string

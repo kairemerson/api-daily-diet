@@ -1,6 +1,6 @@
 
 
-import { prisma } from "@/lib/prisma"
+import { prisma } from "../lib/prisma"
 
 interface CreateMealPlanData {
   patientId: string

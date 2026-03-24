@@ -1,7 +1,7 @@
-import { NutritionistController } from "@/controllers/nutritionist.controller";
-import { verifyJWT } from "@/middlewares/verify-jwt";
-import { PrismaNutritionistRepository } from "@/repositories/nutritionist.repository";
-import { NutritionistProfileService } from "@/services/nutritionist.service";
+import { NutritionistController } from "../controllers/nutritionist.controller";
+import { verifyJWT } from "../middlewares/verify-jwt";
+import { PrismaNutritionistRepository } from "../repositories/nutritionist.repository";
+import { NutritionistProfileService } from "../services/nutritionist.service";
 import { FastifyInstance } from "fastify";
 
 

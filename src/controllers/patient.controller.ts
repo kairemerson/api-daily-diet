@@ -1,5 +1,5 @@
-import { PatientRepository } from "@/repositories/patients.repository";
-import { PatientProfileService } from "@/services/patient.service";
+import { PatientRepository } from "../repositories/patients.repository";
+import { PatientProfileService } from "../services/patient.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod"
 

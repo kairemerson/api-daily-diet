@@ -1,5 +1,5 @@
-import { MealPlanItemController } from "@/controllers/meal-plan-item.controller";
-import { verifyJWT } from "@/middlewares/verify-jwt";
+import { MealPlanItemController } from "../controllers/meal-plan-item.controller";
+import { verifyJWT } from "../middlewares/verify-jwt";
 import { FastifyInstance } from "fastify";
 
 

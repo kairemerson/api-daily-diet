@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma"
+import { prisma } from "../lib/prisma"
 import { CreateMealDTO, MealRepository, UpdateMealDTO } from "./meal-repository.interface"
 
 export class PrismaMealsRepository implements MealRepository {

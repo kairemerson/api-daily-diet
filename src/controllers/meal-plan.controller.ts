@@ -1,5 +1,5 @@
-import { MealPlanRepository } from "@/repositories/mealPlan.repository";
-import { MealPlanService } from "@/services/meal-plan.service";
+import { MealPlanRepository } from "../repositories/mealPlan.repository";
+import { MealPlanService } from "../services/meal-plan.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
 

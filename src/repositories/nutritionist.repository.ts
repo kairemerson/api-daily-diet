@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma"
+import { prisma } from "../lib/prisma"
 import { CreateNutritionistDTO, NutritionistRepository } from "./nutritionist-repository.interface"
 
 

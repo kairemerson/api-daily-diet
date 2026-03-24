@@ -1,6 +1,6 @@
-import { AppError } from "@/errors/app-error";
-import { prisma } from "@/lib/prisma";
-import { NutritionistRepository } from "@/repositories/nutritionist-repository.interface";
+import { AppError } from "../errors/app-error";
+import { prisma } from "../lib/prisma";
+import { NutritionistRepository } from "../repositories/nutritionist-repository.interface";
 
 interface Request {
     userId: string

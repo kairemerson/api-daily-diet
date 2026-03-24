@@ -1,5 +1,5 @@
-import { PatientController } from "@/controllers/patient.controller";
-import { verifyJWT } from "@/middlewares/verify-jwt";
+import { PatientController } from "../controllers/patient.controller";
+import { verifyJWT } from "../middlewares/verify-jwt";
 import { FastifyInstance } from "fastify";
 
 

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../lib/prisma";
 import { CreateUserDTO, UserRepository } from "./user-repository.interface";
 
 export class PrismaUserRepository implements UserRepository {

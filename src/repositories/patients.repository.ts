@@ -1,5 +1,5 @@
-import { dateToLocalString } from "@/helpers/build-dates"
-import { prisma } from "@/lib/prisma"
+import { dateToLocalString } from "../helpers/build-dates"
+import { prisma } from "../lib/prisma"
 import { PatientStatus } from "@prisma/client"
 
 interface CreatePatientData {

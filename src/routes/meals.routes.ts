@@ -1,7 +1,7 @@
-import { MealsController } from "@/controllers/meals.controller";
-import { verifyJWT } from "@/middlewares/verify-jwt";
-import { PrismaMealsRepository } from "@/repositories/meals.repository";
-import { MealsService } from "@/services/meals.service";
+import { MealsController } from "../controllers/meals.controller";
+import { verifyJWT } from "../middlewares/verify-jwt";
+import { PrismaMealsRepository } from "../repositories/meals.repository";
+import { MealsService } from "../services/meals.service";
 import { FastifyInstance } from "fastify";
 
 

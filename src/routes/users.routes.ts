@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
-import { UsersController } from "@/controllers/users.controller";
-import { PrismaUserRepository } from "@/repositories/users.repository";
-import { UserService } from "@/services/users.service";
+import { UsersController } from "../controllers/users.controller";
+import { PrismaUserRepository } from "../repositories/users.repository";
+import { UserService } from "../services/users.service";
 
 export async function UsersRoutes(app: FastifyInstance) {
 

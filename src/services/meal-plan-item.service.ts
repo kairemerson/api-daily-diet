@@ -1,6 +1,6 @@
-import { AppError } from "@/errors/app-error";
-import { prisma } from "@/lib/prisma";
-import { MealPLanItemRepository } from "@/repositories/meal-plan-item.respository";
+import { AppError } from "../errors/app-error";
+import { prisma } from "../lib/prisma";
+import { MealPLanItemRepository } from "../repositories/meal-plan-item.respository";
 
 interface CreateRequest {
     adminUserId: string

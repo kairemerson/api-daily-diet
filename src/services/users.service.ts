@@ -1,5 +1,5 @@
-import { AppError } from "@/errors/app-error"
-import { UserRepository } from "@/repositories/user-repository.interface"
+import { AppError } from "../errors/app-error"
+import { UserRepository } from "../repositories/user-repository.interface"
 import bcrypt from "bcryptjs"
 
 

@@ -1,5 +1,5 @@
 // import { GetMealsMetricsService } from "@/services/get-meals-metrics.service";
-import { MealsService } from "@/services/meals.service";
+import { MealsService } from "../services/meals.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import {z} from "zod"
 

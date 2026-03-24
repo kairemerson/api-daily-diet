@@ -1,4 +1,4 @@
-import { UserService } from "@/services/users.service";
+import { UserService } from "../services/users.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import {z} from "zod"
 

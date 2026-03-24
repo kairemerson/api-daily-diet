@@ -1,8 +1,8 @@
 import { app } from "./app";
 import { env } from "./env";
 
-import { AppError } from "@/errors/app-error"
 import { ZodError } from "zod"
+import { AppError } from "./errors/app-error";
 
 app.setErrorHandler((error, request, reply) => {
   if (error instanceof AppError) {

@@ -1,4 +1,4 @@
-import { AppError } from '@/errors/app-error'
+import { AppError } from '../errors/app-error'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 export async function verifyJWT(

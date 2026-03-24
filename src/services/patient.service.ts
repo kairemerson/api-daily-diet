@@ -1,8 +1,8 @@
-import { AppError } from "@/errors/app-error";
-import { dateToLocalString, getLocalDateString } from "@/helpers/build-dates";
-import { prisma } from "@/lib/prisma";
-import { PatientRepository } from "@/repositories/patients.repository";
 import { PatientStatus } from "@prisma/client";
+import { AppError } from "../errors/app-error";
+import { dateToLocalString, getLocalDateString } from "../helpers/build-dates";
+import { prisma } from "../lib/prisma";
+import { PatientRepository } from "../repositories/patients.repository";
 import bcrypt from "bcryptjs"
 
 

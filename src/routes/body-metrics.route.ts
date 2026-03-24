@@ -1,5 +1,5 @@
-import { BodyMetricsController } from "@/controllers/body-metrics.controller";
-import { verifyJWT } from "@/middlewares/verify-jwt";
+import { BodyMetricsController } from "../controllers/body-metrics.controller";
+import { verifyJWT } from "../middlewares/verify-jwt";
 import { FastifyInstance } from "fastify";
 
 

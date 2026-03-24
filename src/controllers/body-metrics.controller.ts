@@ -1,5 +1,5 @@
-import { BodyMetricsRepository } from "@/repositories/body-metrics.repository";
-import { BodyMetricsService } from "@/services/body-metrics.service";
+import { BodyMetricsRepository } from "../repositories/body-metrics.repository";
+import { BodyMetricsService } from "../services/body-metrics.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
 
