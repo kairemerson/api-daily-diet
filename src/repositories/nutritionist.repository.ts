@@ -1,15 +1,10 @@
 import { prisma } from "@/lib/prisma"
+import { CreateNutritionistDTO, NutritionistRepository } from "./nutritionist-repository.interface"
 
-interface CreateNutritionistData {
-  userId: string
-  crn?: string
-  specialty?: string
-  clinic?: string
-  phone?: string
-}
 
-export class NutritionistRepository {
-    async create(data: CreateNutritionistData) {
+
+export class PrismaNutritionistRepository implements NutritionistRepository {
+    async create(data: CreateNutritionistDTO) {
         return prisma.nutritionistProfile.create({data})
     }
 

@@ -1,4 +1,5 @@
-import { UserRepository } from "@/repositories/users.repository";
+import { AppError } from "@/errors/app-error"
+import { UserRepository } from "@/repositories/user-repository.interface"
 import bcrypt from "bcryptjs"
 
 
@@ -9,7 +10,7 @@ export class UserService {
         const userAlreadyExists = await this.usersRepository.findByEmail(data.email)
 
         if(userAlreadyExists) {
-            throw new Error("User already exists")
+            throw new AppError("Usuário já existe")
         }
 
         const hashedPassword = await bcrypt.hash(data.password, 8)
@@ -21,14 +22,14 @@ export class UserService {
         const user = await this.usersRepository.findByEmail(email)
 
         if(!user) {
-            throw new Error("Invalid credentials")
+            throw new AppError("Invalid credentials")
 
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password)
 
         if(!passwordMatch) {
-            throw new Error("Invalid credentials")
+            throw new AppError("Invalid credentials")
         }
 
         return user

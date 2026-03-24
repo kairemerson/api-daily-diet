@@ -1,34 +1,8 @@
 import { prisma } from "@/lib/prisma"
+import { CreateMealDTO, MealRepository, UpdateMealDTO } from "./meal-repository.interface"
 
-type CreateMealData = {
-    name: string
-    description?: string
-    date: string
-    time: string
-    dateTime: Date
-    isOnDiet: boolean
-    patientProfileId: string
-    mealPlanItemId?: string
-    consumedCalories?: number
-    consumedProtein?: number
-    consumedCarbs?: number
-    consumedFat?: number
-}
-
-type UpdateMealData = {
-    name: string
-    description?: string
-    date: string
-    time: string
-    isOnDiet: boolean
-    consumedCalories?: number
-    consumedProtein?: number
-    consumedCarbs?: number
-    consumedFat?: number
-}
-
-export class MealsRepository {
-    async create(data: CreateMealData) {
+export class PrismaMealsRepository implements MealRepository {
+    async create(data: CreateMealDTO) {
         
         return prisma.meal.create({ data })
     }
@@ -65,7 +39,7 @@ export class MealsRepository {
         })
     }
 
-    async update(id: string, data: UpdateMealData) {
+    async update(id: string, data: UpdateMealDTO) {
         return prisma.meal.update({
             where: {id},
             data

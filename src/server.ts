@@ -27,6 +27,6 @@ app.setErrorHandler((error, request, reply) => {
 
 
 app.listen({port: env.PORT, host: "0.0.0.0"} ).then(() => {
-    console.log(`🚀 Server running on http://localhost:${env.PORT}`);
+    console.log(`🚀 Server running on port ${env.PORT}`);
     
 })

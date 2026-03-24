@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import { CreateUserDTO, UserRepository } from "./user-repository.interface";
 
-export class UserRepository {
+export class PrismaUserRepository implements UserRepository {
     async findByEmail(email: string) {
         return prisma.user.findUnique({
             where: {email}
         })
     }
 
-    async create(data: {name: string, email: string, password: string, role: "ADMIN" | "PATIENT"}) {
+    async create(data: CreateUserDTO) {
         
         return prisma.user.create({data})
     }

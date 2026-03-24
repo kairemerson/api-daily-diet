@@ -1,11 +1,12 @@
-import { MealsRepository } from "@/repositories/meals.repository";
-import { GetMealsMetricsService } from "@/services/get-meals-metrics.service";
+// import { GetMealsMetricsService } from "@/services/get-meals-metrics.service";
 import { MealsService } from "@/services/meals.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import {z} from "zod"
 
 
 export class MealsController {
+    constructor(private mealService: MealsService){}
+
     async create(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema = z.object({
             name: z.string(),
@@ -24,10 +25,7 @@ export class MealsController {
 
         const userId = request.user.sub        
 
-        const mealsRepository = new MealsRepository()
-        const mealService = new MealsService(mealsRepository)
-
-        const meal = await mealService.create(data, userId)
+        const meal = await this.mealService.create(data, userId)
 
         return reply.status(201).send(meal)
     }
@@ -35,10 +33,8 @@ export class MealsController {
     async listByUserId(request: FastifyRequest, reply: FastifyReply) {
         const userId = request.user.sub
 
-        const mealsRepository = new MealsRepository()
-        const mealService = new MealsService(mealsRepository)
 
-        const meals = await mealService.listByUserId(userId)        
+        const meals = await this.mealService.listByUserId(userId)        
 
         return reply.status(200).send(meals)
     }
@@ -51,12 +47,8 @@ export class MealsController {
         const {id} = paramsSchema.parse(request.params)
 
         const userId = request.user.sub
-        
-        const mealsRepository = new MealsRepository()
-        const mealService = new MealsService(mealsRepository)
 
-        
-        const meal = await mealService.getById(id, userId)
+        const meal = await this.mealService.getById(id, userId)
 
         return reply.status(200).send(meal)
         
@@ -71,11 +63,8 @@ export class MealsController {
         const {patientId} = paramsSchema.parse(request.params)
 
         const userId = request.user.sub
-        
-        const mealsRepository = new MealsRepository()
-        const mealService = new MealsService(mealsRepository)
 
-        const meal = await mealService.getByPatientId(patientId, userId)
+        const meal = await this.mealService.getByPatientId(patientId, userId)
         
         return reply.status(200).send(meal)
         
@@ -104,10 +93,7 @@ export class MealsController {
 
         const userId = request.user.sub
 
-        const mealsRepository = new MealsRepository()
-        const mealService = new MealsService(mealsRepository)
-
-        const meal = await mealService.update(id, userId, data)
+        const meal = await this.mealService.update(id, userId, data)
             
         return reply.status(200).send(meal)
        
@@ -123,23 +109,20 @@ export class MealsController {
 
         const userId = request.user.sub
 
-        const mealsRepository = new MealsRepository()
-        const mealService = new MealsService(mealsRepository)
-
-        await mealService.delete(id, userId)
+        await this.mealService.delete(id, userId)
 
         return reply.status(204).send()
 
     }
 
-    async metrics(request: FastifyRequest, reply: FastifyReply) {
-        const userId = request.user.sub
+    // async metrics(request: FastifyRequest, reply: FastifyReply) {
+    //     const userId = request.user.sub
 
-        const mealsRepository = new MealsRepository()
-        const getMealsMetricsService = new GetMealsMetricsService(mealsRepository)
+    //     const mealsRepository = new MealsRepository()
+    //     const getMealsMetricsService = new GetMealsMetricsService(mealsRepository)
 
-        const metrics = await getMealsMetricsService.execute(userId)
+    //     const metrics = await getMealsMetricsService.execute(userId)
 
-        return reply.send(metrics)
-    }
+    //     return reply.send(metrics)
+    // }
 }

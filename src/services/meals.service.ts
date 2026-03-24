@@ -1,7 +1,7 @@
 import { AppError } from "@/errors/app-error";
 import { buildDate, dateToLocalString } from "@/helpers/build-dates";
 import { prisma } from "@/lib/prisma";
-import { MealsRepository } from "@/repositories/meals.repository";
+import { MealRepository } from "@/repositories/meal-repository.interface";
 
 interface CreateMealRequest {
     name: string
@@ -29,7 +29,7 @@ interface UpdateMealRequest {
 }
 
 export class MealsService {
-    constructor(private mealsRepository: MealsRepository) {}
+    constructor(private mealsRepository: MealRepository) {}
 
     async create(data: CreateMealRequest, userId: string) {
 
