@@ -1,10 +1,11 @@
-import { PatientRepository } from "../repositories/patients.repository";
 import { PatientProfileService } from "../services/patient.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod"
 
 
 export class PatientController {
+    constructor(private patientService: PatientProfileService) {}
+
     async register(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema = z.object({
             name: z.string(),
@@ -22,13 +23,9 @@ export class PatientController {
             observation: z.string().optional()
         })
 
-        const data = bodySchema.parse(request.body)
-        
+        const data = bodySchema.parse(request.body)       
 
-        const repository = new PatientRepository()
-        const service = new PatientProfileService(repository)
-
-        await service.execute({
+        await this.patientService.execute({
             adminUserId: request.user.sub,
             ...data,
             birthDate: data.birthDate ? new Date(data.birthDate) : undefined
@@ -40,10 +37,7 @@ export class PatientController {
     async list(request: FastifyRequest, reply: FastifyReply){
         const userId = request.user.sub
 
-        const repository = new PatientRepository()
-        const service = new PatientProfileService(repository)
-
-        const patients = await service.listByUser(userId)
+        const patients = await this.patientService.listByUser(userId)
 
         return reply.status(200).send(patients)
 
@@ -59,10 +53,7 @@ export class PatientController {
 
         const adminUserId = request.user.sub        
 
-        const repository = new PatientRepository()
-        const service = new PatientProfileService(repository)
-
-        const dashboard = await service.getDashboard({
+        const dashboard = await this.patientService.getDashboard({
             adminUserId, patientId
         })
 
@@ -75,10 +66,7 @@ export class PatientController {
 
         const userId = request.user.sub                
 
-        const repository = new PatientRepository()
-        const service = new PatientProfileService(repository)
-
-        const dashboard = await service.getPatientDashboard({
+        const dashboard = await this.patientService.getPatientDashboard({
             userId
         })
 
@@ -101,10 +89,7 @@ export class PatientController {
 
         const adminUserId = request.user.sub                
 
-        const repository = new PatientRepository()
-        const service = new PatientProfileService(repository)
-
-        await service.updatePatientStatus({
+        await this.patientService.updatePatientStatus({
             adminUserId,
             patientId: id,
             status

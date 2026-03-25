@@ -2,8 +2,8 @@ import { PatientStatus } from "@prisma/client";
 import { AppError } from "../errors/app-error";
 import { dateToLocalString, getLocalDateString } from "../helpers/build-dates";
 import { prisma } from "../lib/prisma";
-import { PatientRepository } from "../repositories/patients.repository";
 import bcrypt from "bcryptjs"
+import { PatientRepository } from "../repositories/patient-repository.interface";
 
 
 interface CreateDataRequest {
@@ -30,7 +30,7 @@ interface UpdatePatientStatusRequest {
 }
 
 export class PatientProfileService {
-    constructor(private patientsRepository: PatientRepository){}
+    constructor(private patientRepository: PatientRepository){}
 
     async execute(data: CreateDataRequest){
         const admin = await prisma.user.findUnique({
@@ -48,7 +48,7 @@ export class PatientProfileService {
         
         const hashedPassword = await bcrypt.hash(data.password, 8)
         
-        return this.patientsRepository.create({
+        return this.patientRepository.create({
             user: {
                 name: data.name,
                 email: data.email,
@@ -81,7 +81,7 @@ export class PatientProfileService {
         }
 
         const { patients, mealStats, lastActivity } =
-            await this.patientsRepository.findManyWithAdherenceByNutritionistId(
+            await this.patientRepository.findManyWithAdherenceByNutritionistId(
                 user.nutritionistProfile.id
             )
 
@@ -529,6 +529,6 @@ export class PatientProfileService {
             throw new AppError("Paciente não pertence ao nutricionista.")
         }
 
-        await this.patientsRepository.updatePatientStatus(patientId, status)
+        await this.patientRepository.updatePatientStatus(patientId, status)
     }
 }
