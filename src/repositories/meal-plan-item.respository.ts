@@ -1,22 +1,9 @@
 import { prisma } from "../lib/prisma";
+import { CreateMealPlanItemDTO, MealPLanItemRepository } from "./meal-plan-item-repository.interface";
 
-interface CreateMealPlanItemData {
-    mealPlanId: string
-    name: string
-    description?: string
-    order: number
-    time: string
-    targetCalories?: number
-    targetProtein?: number
-    targetCarbs?: number
-    targetFat?: number
-}
+export class PrismaMealPLanItemRepository implements MealPLanItemRepository {
+    async create(data: CreateMealPlanItemDTO) {
 
-export class MealPLanItemRepository {
-    async create(data: CreateMealPlanItemData) {
-
-        
-        
         return prisma.mealPlanItem.create({
             data: {
                 mealPlanId: data.mealPlanId,
