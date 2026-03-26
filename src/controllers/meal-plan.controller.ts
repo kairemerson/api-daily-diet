@@ -1,9 +1,11 @@
-import { MealPlanRepository } from "../repositories/mealPlan.repository";
 import { MealPlanService } from "../services/meal-plan.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
 
 export class MealPlanController {
+
+    constructor(private mealPlanService: MealPlanService){}
+
     async create(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema =z.object({
             patientId: z.string(),
@@ -20,11 +22,8 @@ export class MealPlanController {
         const data = bodySchema.parse(request.body)
 
         const user_id = request.user.sub
-        
-        const mealPlanRepository = new MealPlanRepository()
-        const service = new MealPlanService(mealPlanRepository)
 
-        const mealPlan = await service.create({adminUserId: user_id, ...data})
+        const mealPlan = await this.mealPlanService.create({adminUserId: user_id, ...data})
 
         return reply.status(201).send(mealPlan)
     }
@@ -38,10 +37,7 @@ export class MealPlanController {
 
         const user_id = request.user.sub        
 
-        const mealPlanRepository = new MealPlanRepository()
-        const service = new MealPlanService(mealPlanRepository)
-
-        const mealPlans = await service.findByPatientId({adminUserId: user_id, patientId})
+        const mealPlans = await this.mealPlanService.findByPatientId({adminUserId: user_id, patientId})
 
         return reply.status(200).send(mealPlans)
 
@@ -56,10 +52,7 @@ export class MealPlanController {
 
         const user_id = request.user.sub        
 
-        const mealPlanRepository = new MealPlanRepository()
-        const service = new MealPlanService(mealPlanRepository)
-
-        const mealPlans = await service.findById({adminUserId: user_id, mealPlanId})
+        const mealPlans = await this.mealPlanService.findById({adminUserId: user_id, mealPlanId})
 
         return reply.status(200).send(mealPlans)
 
@@ -86,11 +79,9 @@ export class MealPlanController {
         const data = bodySchema.parse(request.body)
 
         const user_id = request.user.sub
-        
-        const mealPlanRepository = new MealPlanRepository()
-        const service = new MealPlanService(mealPlanRepository)
+    
 
-        const mealPLan = await service.update(user_id, id, data)
+        const mealPLan = await this.mealPlanService.update(user_id, id, data)
 
         return reply.status(200).send(mealPLan)
     }
