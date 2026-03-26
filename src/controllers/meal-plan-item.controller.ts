@@ -1,10 +1,12 @@
-import { MealPLanItemRepository } from "../repositories/meal-plan-item.respository";
 import { MealPlanItemService } from "../services/meal-plan-item.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
 
 
 export class MealPlanItemController {
+
+    constructor(private mealPlanItemService: MealPlanItemService){}
+
     async create(request: FastifyRequest, reply: FastifyReply) {
         
         const bodySchema = z.object({
@@ -23,10 +25,7 @@ export class MealPlanItemController {
 
         const adminUserId = request.user.sub
 
-        const mealPlanItemRepository = new MealPLanItemRepository()
-        const service = new MealPlanItemService(mealPlanItemRepository)
-
-        const mealPlanItem = await service.create({
+        const mealPlanItem = await this.mealPlanItemService.create({
             adminUserId,
             ...data
         })
@@ -44,10 +43,7 @@ export class MealPlanItemController {
 
         const userId = request.user.sub        
 
-        const mealPlanItemRepository = new MealPLanItemRepository()
-        const service = new MealPlanItemService(mealPlanItemRepository)
-
-        const mealPlanItem = await service.getMealPlanItemByIdRequest(mealPlanItemId, userId)
+        const mealPlanItem = await this.mealPlanItemService.getMealPlanItemByIdRequest(mealPlanItemId, userId)
 
         return reply.status(200).send(mealPlanItem)
     }
