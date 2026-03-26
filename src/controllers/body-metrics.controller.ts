@@ -1,9 +1,11 @@
-import { BodyMetricsRepository } from "../repositories/body-metrics.repository";
 import { BodyMetricsService } from "../services/body-metrics.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
 
 export class BodyMetricsController {
+
+    constructor(private bodyMetricsService: BodyMetricsService){}
+
     async create(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema = z.object({
             patientId: z.string(),
@@ -23,10 +25,7 @@ export class BodyMetricsController {
 
         const user_id = request.user.sub
 
-        const bodyMetricsRepository = new BodyMetricsRepository()
-        const service = new BodyMetricsService(bodyMetricsRepository)
-
-        const bodyMetric = await service.create({adminUserId: user_id, ...data})
+        const bodyMetric = await this.bodyMetricsService.create({adminUserId: user_id, ...data})
 
         return reply.status(201).send(bodyMetric)
     }
@@ -40,10 +39,7 @@ export class BodyMetricsController {
 
         const user_id = request.user.sub
 
-        const bodyMetricsRepository = new BodyMetricsRepository()
-        const service = new BodyMetricsService(bodyMetricsRepository)
-
-        const bodyMetrics = await service.fetchByPatientId(patientId, user_id)
+        const bodyMetrics = await this.bodyMetricsService.fetchByPatientId(patientId, user_id)
 
         return reply.status(200).send(bodyMetrics)
     }

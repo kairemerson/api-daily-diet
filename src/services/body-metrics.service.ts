@@ -1,6 +1,6 @@
 import { AppError } from "../errors/app-error"
 import { prisma } from "../lib/prisma"
-import { BodyMetricsRepository } from "../repositories/body-metrics.repository"
+import { BodyMetricsRepository } from "../repositories/body-metrics-repository.interface"
 
 interface CreateRequest {
     adminUserId: string
