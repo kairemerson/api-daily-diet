@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma"
-import { CreateMealPlanDTO, MealPlanRepository, UpdateMealPlan } from "./meal-plan-repository.interface"
+import { CreateMealPlanDTO, MealPlanRepository, MealPlanWithMealPlanItems, UpdateMealPlan } from "./meal-plan-repository.interface"
 
 export class PrismaMealPlanRepository implements MealPlanRepository {
   async create(data: CreateMealPlanDTO) {
@@ -18,56 +18,44 @@ export class PrismaMealPlanRepository implements MealPlanRepository {
     })
   }
 
-  async findByPatientId(patientId: string) {
+  async findByPatientId(patientId: string): Promise<MealPlanWithMealPlanItems[]> {
     const mealPlans = await prisma.mealPlan.findMany({
-      where: {
-        patientId,
-      },
-      include: {
-        mealPlanItems: {
-          orderBy: {
-            time: "asc"
-          }
-        }
-      },
-      orderBy: {
-        createdAt: "desc"
-      }
+        where: { patientId },
+        include: {
+            mealPlanItems: {
+                orderBy: { time: "asc" }
+            }
+        },
+        orderBy: { createdAt: "desc" }
     })
 
-    return mealPlans.map((plan) => {
-      return {
-        mealPlan: {
-          id: plan.id,
-          title: plan.title,
-          description: plan.description,
-          caloriesTarget: plan.caloriesTarget,
-          proteinTarget: plan.proteinTarget,
-          carbsTarget: plan.carbsTarget,
-          fatTarget: plan.fatTarget,
-          startDate: plan.startDate,
-          endDate: plan.endDate,
-          isActive: plan.isActive,
-          createdAt: plan.createdAt,
-          updatedAt: plan.updatedAt,
-          patientId: plan.patientId,
-        },
+    return mealPlans.map((plan) => ({
+        id: plan.id,
+        patientId: plan.patientId,
+        title: plan.title,
+        description: plan.description,
+        caloriesTarget: plan.caloriesTarget,
+        proteinTarget: plan.proteinTarget,
+        carbsTarget: plan.carbsTarget,
+        fatTarget: plan.fatTarget,
+        startDate: plan.startDate,
+        endDate: plan.endDate,
+        isActive: plan.isActive,
+        createdAt: plan.createdAt,
+        updatedAt: plan.updatedAt,
         mealPlanItems: plan.mealPlanItems.map((item) => ({
-          id: item.id,
-          name: item.name,
-          createdAt: item.createdAt,
-          description: item.description,
-          time: item.time,
-          mealPlanId: item.mealPlanId,
-          order: item.order,
-          targetCalories: item.targetCalories,
-          targetProtein: item.targetProtein,
-          targetCarbs: item.targetCarbs,
-          targetFat: item.targetFat,
-        })),
-      };
-    });
-  }
+            id: item.id,
+            description: item.description,
+            name: item.name,
+            targetCalories: item.targetCalories,
+            targetProtein: item.targetProtein,
+            targetCarbs: item.targetCarbs,
+            targetFat: item.targetFat,
+            mealPlanId: item.mealPlanId,
+            time: item.time,
+        }))
+    }))
+}
 
   async findById(mealPlanId: string) {
     const plan = await prisma.mealPlan.findUnique({
@@ -82,8 +70,8 @@ export class PrismaMealPlanRepository implements MealPlanRepository {
     if (!plan) throw new Error("MealPlan not found");
 
     return {
-      mealPlan: {
         id: plan.id,
+        patientId: plan.patientId,
         title: plan.title,
         description: plan.description,
         caloriesTarget: plan.caloriesTarget,
@@ -95,22 +83,18 @@ export class PrismaMealPlanRepository implements MealPlanRepository {
         isActive: plan.isActive,
         createdAt: plan.createdAt,
         updatedAt: plan.updatedAt,
-        patientId: plan.patientId,
-      },
-      mealPlanItems: plan.mealPlanItems.map((item) => ({
-        id: item.id,
-        name: item.name,
-        createdAt: item.createdAt,
-        description: item.description,
-        time: item.time,
-        mealPlanId: item.mealPlanId,
-        order: item.order,
-        targetCalories: item.targetCalories,
-        targetProtein: item.targetProtein,
-        targetCarbs: item.targetCarbs,
-        targetFat: item.targetFat,
-      })),
-    };
+        mealPlanItems: plan.mealPlanItems.map((item) => ({
+            id: item.id,
+            description: item.description,
+            name: item.name,
+            targetCalories: item.targetCalories,
+            targetProtein: item.targetProtein,
+            targetCarbs: item.targetCarbs,
+            targetFat: item.targetFat,
+            mealPlanId: item.mealPlanId,
+            time: item.time,
+        }))
+    }
   }
 
   async update(mealPlanId: string, data: UpdateMealPlan) {

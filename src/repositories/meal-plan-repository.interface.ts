@@ -1,7 +1,7 @@
 
 export interface MealPlanRepository {
     create(data: CreateMealPlanDTO): Promise<MealPlan>
-    findByPatientId(patientId: string): Promise<MealPlansWithMealPlanItems>
+    findByPatientId(patientId: string): Promise<MealPlanWithMealPlanItems[]>
     findById(mealPlanId: string): Promise<MealPlanWithMealPlanItems>
     update(mealPlanId: string, data: UpdateMealPlan): Promise<MealPlan>
 }
@@ -31,6 +31,7 @@ export type UpdateMealPlan = {
 
 export type MealPlan = {
     id: string;
+    patientId: string;
     title: string;
     description: string | null;
     caloriesTarget: number | null;
@@ -42,29 +43,20 @@ export type MealPlan = {
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
-    patientId: string;
 }
 
 export type MealPlanItem = {
     id: string;
     name: string;
-    createdAt: Date;
     description: string | null;
     time: string;
     mealPlanId: string;
-    order: number;
     targetCalories: number | null;
     targetProtein: number | null;
     targetCarbs: number | null;
     targetFat: number | null;
 }
 
-export type MealPlansWithMealPlanItems = {
-    mealPlan: MealPlan
-    mealPlanItems: MealPlanItem[]
-}[]
-
-export type MealPlanWithMealPlanItems = {
-    mealPlan: MealPlan
+export type MealPlanWithMealPlanItems = MealPlan & {
     mealPlanItems: MealPlanItem[]
 }

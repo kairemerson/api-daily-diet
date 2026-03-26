@@ -14,6 +14,6 @@ export async function MealPlanRoutes(app: FastifyInstance) {
 
     app.post("/meal-plans", mealPlanController.create.bind(mealPlanController))
     app.get("/patients/:patientId/meal-plans", mealPlanController.findByPatienId.bind(mealPlanController))
-    app.get("/meal-plans/:mealPlanId/", mealPlanController.findById.bind(mealPlanController))
+    app.get("/meal-plans/:mealPlanId", mealPlanController.findById.bind(mealPlanController))
     app.put("/meal-plans/:id", mealPlanController.update.bind(mealPlanController))
 }
