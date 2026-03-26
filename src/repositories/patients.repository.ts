@@ -1,11 +1,11 @@
 import { dateToLocalString } from "../helpers/build-dates"
 import { prisma } from "../lib/prisma"
 import { PatientStatus } from "@prisma/client"
-import { CreatePatientDTO } from "./patient-repository.interface"
+import { CreatePatientDTO, PatientRepository } from "./patient-repository.interface"
 
 
 
-export class PrismaPatientRepository {
+export class PrismaPatientRepository implements PatientRepository {
     async create(data: CreatePatientDTO) {
         return prisma.$transaction(async (tx) => {
           const user = await tx.user.create({

@@ -19,7 +19,7 @@ export class NutritionistController {
         const userId = request.user.sub
 
 
-        await this.service.execute({
+        const nutritionistProfile = await this.service.execute({
             userId,
             crn,
             clinic,
@@ -27,6 +27,6 @@ export class NutritionistController {
             specialty
         })
 
-        return reply.status(201).send()
+        return reply.status(201).send({nutritionistProfile})
     }
 }
