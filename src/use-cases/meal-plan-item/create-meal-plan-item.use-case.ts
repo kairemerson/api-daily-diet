@@ -1,8 +1,8 @@
-import { AppError } from "../errors/app-error";
-import { prisma } from "../lib/prisma";
-import { MealPLanItemRepository } from "../repositories/meal-plan-item-repository.interface";
+import { AppError } from "../../errors/app-error";
+import { prisma } from "../../lib/prisma";
+import { MealPLanItemRepository } from "../../repositories/meal-plan-item-repository.interface";
 
-interface CreateRequest {
+interface CreateMealPLanItemRequest {
     adminUserId: string
     mealPlanId: string
     name: string
@@ -15,10 +15,10 @@ interface CreateRequest {
     targetFat?: number
 }
 
-export class MealPlanItemService {
+export class CreateMealPlanItemUseCase {
     constructor(private mealPlanItemRepository: MealPLanItemRepository){}
 
-    async create(data: CreateRequest) {
+    async execute(data: CreateMealPLanItemRequest) {
         const admin = await prisma.user.findUnique({
             where: { id: data.adminUserId },
             include: { nutritionistProfile: true },
@@ -48,33 +48,5 @@ export class MealPlanItemService {
         }
         
         return this.mealPlanItemRepository.create(data)
-    }
-
-    async getMealPlanItemByIdRequest(mealPlanItemId: string, userId: string) {
-        const patient = await prisma.patientProfile.findUnique({
-            where: {
-                userId
-            }
-        })
-
-        const mealPlanItem = await prisma.mealPlanItem.findUnique({
-            where: {
-                id: mealPlanItemId,
-            },
-            include: {
-                mealPlan: {
-                    select: {
-                        patientId: true
-                    }
-                }
-            }
-        })
-
-        if(patient?.id !== mealPlanItem?.mealPlan.patientId) {
-            throw new AppError("Este plano não pertence ao paciente!")
-
-        }
-
-        return this.mealPlanItemRepository.findMealPlanItemById(mealPlanItemId)
     }
 }
