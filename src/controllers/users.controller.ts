@@ -1,10 +1,16 @@
-import { UserService } from "../services/users.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import {z} from "zod"
+import { CreateUserUseCase } from "../use-cases/users/create-user.use-case";
+import { UserRepository } from "../repositories/user-repository.interface";
+import { LoginUserUseCase } from "../use-cases/users/login-user.use-case";
 
 export class UsersController {
 
-    constructor(private userService: UserService){}
+    constructor(
+        private userRepository: UserRepository,
+        private createUserUseCase = new CreateUserUseCase(userRepository),
+        private loginUserUseCase = new LoginUserUseCase(userRepository),
+    ){}
 
     async register(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema = z.object({
@@ -16,7 +22,7 @@ export class UsersController {
 
         const {name, email, password, role} = bodySchema.parse(request.body)
 
-        await this.userService.register({name, email, password, role})
+        await this.createUserUseCase.execute({name, email, password, role})
 
         return reply.status(201).send()
     }
@@ -29,7 +35,7 @@ export class UsersController {
 
         const {email, password} = bodySchema.parse(request.body)
 
-        const user = await this.userService.login(email, password)
+        const user = await this.loginUserUseCase.execute({email, password})
 
         const token = await reply.jwtSign(
             {
