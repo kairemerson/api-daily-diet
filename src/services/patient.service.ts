@@ -2,21 +2,9 @@ import { PatientStatus } from "@prisma/client";
 import { AppError } from "../errors/app-error";
 import { dateToLocalString, getLocalDateString } from "../helpers/build-dates";
 import { prisma } from "../lib/prisma";
-import bcrypt from "bcryptjs"
 import { PatientRepository } from "../repositories/patient-repository.interface";
 
-
-interface CreateDataRequest {
-  adminUserId: string
-  name: string
-  email: string
-  password: string
-  goal: "WEIGHT_LOSS" | "HYPERTROPHY" | "REEDUCATION" | "MAINTENANCE"
-  birthDate?: Date
-  height?: number
-  targetWeight?: number
-  observation?: string
-}
+import {CreateDataRequest, CreatePatientUseCase} from "../use-cases/create-patient.use-case"
 
 interface GetDashboardRequest {
   adminUserId: string
@@ -30,39 +18,13 @@ interface UpdatePatientStatusRequest {
 }
 
 export class PatientProfileService {
-    constructor(private patientRepository: PatientRepository){}
+    constructor(
+        private createPatientUseCase: CreatePatientUseCase,
+        private patientRepository: PatientRepository
+    ){}
 
-    async execute(data: CreateDataRequest){
-        const admin = await prisma.user.findUnique({
-            where: {id: data.adminUserId},
-            include: {nutritionistProfile: true}
-        })
-
-        if(!admin || admin.role !== "ADMIN") {
-            throw new AppError("Somente ADMIN pode criar pacientes!")
-        }
-
-        if(!admin.nutritionistProfile) {
-            throw new AppError("Perfil do nutricionista não encontrado!")
-        }
-        
-        const hashedPassword = await bcrypt.hash(data.password, 8)
-        
-        return this.patientRepository.create({
-            user: {
-                name: data.name,
-                email: data.email,
-                password: hashedPassword
-            },
-            profile: {
-                nutritionistId: admin.nutritionistProfile.id,
-                goal: data.goal,
-                birthDate: data.birthDate,
-                height: data.height,
-                targetWeight: data.targetWeight,
-                observation: data.observation
-            }
-        })
+    async execute(createData: CreateDataRequest){
+        return this.createPatientUseCase.execute(createData)
     }
 
     async listByUser(userId: string) {
