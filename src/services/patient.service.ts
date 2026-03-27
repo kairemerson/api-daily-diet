@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma";
 import { PatientRepository } from "../repositories/patient-repository.interface";
 
 import {CreateDataRequest, CreatePatientUseCase} from "../use-cases/create-patient.use-case"
+import { ListPatientByNutritionistUseCase } from "../use-cases/list-patient-by-nutritionist.use-case";
 
 interface GetDashboardRequest {
   adminUserId: string
@@ -20,6 +21,7 @@ interface UpdatePatientStatusRequest {
 export class PatientProfileService {
     constructor(
         private createPatientUseCase: CreatePatientUseCase,
+        private listPatientByNutritionistUseCase: ListPatientByNutritionistUseCase,
         private patientRepository: PatientRepository
     ){}
 
@@ -28,75 +30,7 @@ export class PatientProfileService {
     }
 
     async listByUser(userId: string) {
-
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { nutritionistProfile: true }
-        })
-
-        if (!user || user.role !== "ADMIN") {
-            throw new AppError("Somente ADMIN pode buscar pacientes!")
-        }
-
-        if (!user.nutritionistProfile) {
-            throw new AppError("Perfil do nutricionista não encontrado!")
-        }
-
-        const { patients, mealStats, lastActivity } =
-            await this.patientRepository.findManyWithAdherenceByNutritionistId(
-                user.nutritionistProfile.id
-            )
-
-        // map de stats
-        const statsByPatient = new Map<string, any[]>()
-
-        for (const stat of mealStats) {
-                if (!statsByPatient.has(stat.patientProfileId)) {
-                statsByPatient.set(stat.patientProfileId, [])
-            }
-
-            statsByPatient.get(stat.patientProfileId)!.push(stat)
-        }
-
-        // map de última atividade
-        const lastActivityByPatient = new Map<string, Date | null>()
-
-        for (const activity of lastActivity) {
-                lastActivityByPatient.set(
-                activity.patientProfileId,
-                activity._max.dateTime
-            )
-        }
-
-        return patients.map((patient) => {
-
-            const stats = statsByPatient.get(patient.id) ?? []
-
-            const totalMeals = stats.reduce(
-                (acc, curr) => acc + curr._count,
-                0
-            )
-
-            const onDietMeals =
-                stats.find(s => s.isOnDiet === true)?._count ?? 0
-            
-            const adherence =
-                totalMeals === 0
-                    ? 0
-                    : Math.round((onDietMeals / totalMeals) * 100)
-
-            const last = lastActivityByPatient.get(patient.id) ?? null
-            
-            return {
-                id: patient.id,
-                name: patient.user.name,
-                email: patient.user.email,
-                lastActivity: last,
-                adherence,
-                totalMeals
-            }
-
-        })
+        this.listPatientByNutritionistUseCase.execute({userId})
     }
 
     async getDashboard({adminUserId, patientId}: GetDashboardRequest){
