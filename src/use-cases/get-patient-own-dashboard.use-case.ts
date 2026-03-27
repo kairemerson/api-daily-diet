@@ -1,149 +1,68 @@
-import { PatientStatus } from "@prisma/client";
 import { AppError } from "../errors/app-error";
 import { dateToLocalString, getLocalDateString } from "../helpers/build-dates";
 import { prisma } from "../lib/prisma";
 import { PatientRepository } from "../repositories/patient-repository.interface";
 
-import {CreateDataRequest, CreatePatientUseCase} from "../use-cases/create-patient.use-case"
-import { ListPatientByNutritionistUseCase } from "../use-cases/list-patient-by-nutritionist.use-case";
 
-interface GetDashboardRequest {
-  adminUserId: string
-  patientId: string
+export interface GetPatientOwnDashboardRequest {
+  userId: string;
 }
 
-interface UpdatePatientStatusRequest {
-  adminUserId: string
-  patientId: string
-  status: PatientStatus
+export interface PatientOwnDashboardMealPlanItem {
+  id: string;
+  name: string;
+  order: number;
+  time: string;
 }
 
-export class PatientProfileService {
-    constructor(
-        private createPatientUseCase: CreatePatientUseCase,
-        private listPatientByNutritionistUseCase: ListPatientByNutritionistUseCase,
-        private patientRepository: PatientRepository
-    ){}
+export interface PatientOwnDashboardMealPlan {
+  id: string;
+  caloriesTarget: number | null;
+  mealPlanItems: PatientOwnDashboardMealPlanItem[];
+}
 
-    async execute(createData: CreateDataRequest){
-        return this.createPatientUseCase.execute(createData)
-    }
+export interface GetPatientOwnDashboardResponse {
+  patient: {
+    id: string;
+    name: string;
+    goal: "WEIGHT_LOSS" | "HYPERTROPHY" | "REEDUCATION" | "MAINTENANCE";
+    targetWeight: number | null;
+    observation: string | null;
+  };
+  metrics: {
+    currentWeight: number | null;
+    weightDifference: number | null;
+    currentBodyFat: number | null;
+    currentMuscleMass: number | null;
+  };
+  adherence: {
+    last7Days: number;
+  };
+  streak: {
+    currentStreak: number;
+    bestStreak: number;
+    period: 90;
+  };
+  today: {
+    totalTodayMeals: number;
+    completedMealsToday: number;
+    totalCaloriesTarget: number;
+    totalCaloriesConsumed: number;
+    totalProteinConsumed: number;
+    totalCarbsConsumed: number;
+    totalFatConsumed: number;
+    adherenceToday: number;
+  };
+  activeMealPlan: PatientOwnDashboardMealPlan | null;
+}
 
-    async listByUser(userId: string) {
-        this.listPatientByNutritionistUseCase.execute({userId})
-    }
-
-    async getDashboard({adminUserId, patientId}: GetDashboardRequest){
-
-        const admin = await prisma.user.findUnique({
-            where: { id: adminUserId },
-            include: { nutritionistProfile: true }
-        })
-
-        if (!admin || admin.role !== "ADMIN") {
-            throw new AppError("Apenas ADMIN pode acessar dashboard.")
-        }
-
-        if (!admin.nutritionistProfile) {
-            throw new AppError("Perfil do nutricionista não encontrado.")
-        }
-
-        const patient = await prisma.patientProfile.findFirst({
-            where: {
-                id: patientId,
-                nutritionistId: admin.nutritionistProfile.id
-            },
-            include: {
-                user: true
-            }
-        })
-
-        if (!patient) {
-            throw new AppError("Paciente não pertence ao nutricionista.")
-        }
-
-        //Buscar métricas corporais
-        const [firstMetric, lastMetric] = await Promise.all([
-            prisma.bodyMetrics.findFirst({
-                where: { patientId },
-                orderBy: { recordedAt: "asc" }
-            }),
-            prisma.bodyMetrics.findFirst({
-                where: { patientId },
-                orderBy: { recordedAt: "desc" }
-            })
-        ])
-
-        const currentWeight = lastMetric?.weight ?? null
-        const weightDifference =
-            firstMetric?.weight != null && lastMetric?.weight != null
-                ? lastMetric.weight - firstMetric.weight
-                : null
-
-        const currentBodyFat = lastMetric?.bodyFat ?? null
-        const currentMuscleMass = lastMetric?.muscleMass ?? null
-
-        // Buscar plano alimentar
-        const mealPlans = await prisma.mealPlan.findMany({
-            where: {
-                patientId,
-            },
-            include: {
-                mealPlanItems: true
-            }
-        })
-
-        // Calcular aderência últimos 7 dias
-        const sevenDaysAgo = new Date()
-        sevenDaysAgo.setHours(0,0,0,0)
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-        const mealsLast7Days = await prisma.meal.findMany({
-            where: {
-                patientProfileId: patientId,
-                dateTime: { gte: sevenDaysAgo },
-                
-            },
-            select: {
-                isOnDiet: true
-            }
-        })
-
-        const totalMeals = mealsLast7Days.length
-        const onDietMeals = mealsLast7Days.filter(m => m.isOnDiet).length
-
-        const adherence =
-        totalMeals > 0
-            ? Math.round((onDietMeals / totalMeals) * 100)
-            : 0
-
-        return {
-            patient: {
-                id: patient.id,
-                name: patient.user.name,
-                goal: patient.goal,
-                status: patient.status,
-                targetWeight: patient.targetWeight,
-                observation: patient.observation
-            },
-            metrics: {
-                currentWeight,
-                weightDifference,
-                currentBodyFat,
-                currentMuscleMass
-            },
-            adherence: {
-                last7Days: adherence
-            },
-            mealPlans
-        }
-    }
-
-    async getPatientDashboard({userId}: {userId: string}){
-        
+export class GetPatientOwnDashboardUseCase {
+    constructor(private patientRepository: PatientRepository){}
+    
+    async execute(input: GetPatientOwnDashboardRequest): Promise<GetPatientOwnDashboardResponse> {
         const patient = await prisma.patientProfile.findUnique({
             where: {
-                userId: userId,
+                userId: input.userId,
             },
             select: {
                 id: true,
@@ -362,7 +281,7 @@ export class PatientProfileService {
             }
 
         }
-      
+        
 
         return {
             patient: {
@@ -398,33 +317,5 @@ export class PatientProfileService {
             },
             activeMealPlan
         }
-    }
-
-    async updatePatientStatus({adminUserId, patientId, status}: UpdatePatientStatusRequest) {
-        const admin = await prisma.user.findUnique({
-            where: { id: adminUserId },
-            include: { nutritionistProfile: true }
-        })
-
-        if (!admin || admin.role !== "ADMIN") {
-            throw new AppError("Apenas ADMIN pode acessar dashboard.")
-        }
-
-        if (!admin.nutritionistProfile) {
-            throw new AppError("Perfil do nutricionista não encontrado.")
-        }
-
-        const patient = await prisma.patientProfile.findFirst({
-            where: {
-                id: patientId,
-                nutritionistId: admin.nutritionistProfile.id
-            },
-        })
-
-        if (!patient) {
-            throw new AppError("Paciente não pertence ao nutricionista.")
-        }
-
-        await this.patientRepository.updatePatientStatus(patientId, status)
     }
 }

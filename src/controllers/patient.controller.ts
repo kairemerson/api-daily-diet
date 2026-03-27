@@ -1,10 +1,22 @@
-import { PatientProfileService } from "../services/patient.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod"
+import { CreatePatientUseCase } from "../use-cases/create-patient.use-case";
+import { GetPatientDashboardUseCase } from "../use-cases/get-patient-dashboard.use-case";
+import { GetPatientOwnDashboardUseCase } from "../use-cases/get-patient-own-dashboard.use-case";
+import { ListPatientByNutritionistUseCase } from "../use-cases/list-patient-by-nutritionist.use-case";
+import { UpdatePatientStatusUseCase } from "../use-cases/update-patient-status.use-case";
+import { PrismaPatientRepository } from "../repositories/patients.repository";
 
 
 export class PatientController {
-    constructor(private patientService: PatientProfileService) {}
+    constructor(
+        private patientRepository: PrismaPatientRepository,
+        private createPatientUseCase = new CreatePatientUseCase(patientRepository),
+        private listPatientByNutritionistUseCase = new ListPatientByNutritionistUseCase(patientRepository),
+        private getPatientDashboardUseCase = new GetPatientDashboardUseCase(patientRepository),
+        private getPatientOwnDashboardUseCase = new GetPatientOwnDashboardUseCase(patientRepository),
+        private updatePatientStatusUseCase = new UpdatePatientStatusUseCase(patientRepository)
+    ) {}
 
     async register(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema = z.object({
@@ -25,7 +37,7 @@ export class PatientController {
 
         const data = bodySchema.parse(request.body)       
 
-        await this.patientService.execute({
+        await this.createPatientUseCase.execute({
             adminUserId: request.user.sub,
             ...data,
             birthDate: data.birthDate ? new Date(data.birthDate) : undefined
@@ -37,7 +49,7 @@ export class PatientController {
     async list(request: FastifyRequest, reply: FastifyReply){
         const userId = request.user.sub
 
-        const patients = await this.patientService.listByUser(userId)
+        const patients = await this.listPatientByNutritionistUseCase.execute({userId})
 
         return reply.status(200).send(patients)
 
@@ -53,7 +65,7 @@ export class PatientController {
 
         const adminUserId = request.user.sub        
 
-        const dashboard = await this.patientService.getDashboard({
+        const dashboard = await this.getPatientDashboardUseCase.execute({
             adminUserId, patientId
         })
 
@@ -66,7 +78,7 @@ export class PatientController {
 
         const userId = request.user.sub                
 
-        const dashboard = await this.patientService.getPatientDashboard({
+        const dashboard = await this.getPatientOwnDashboardUseCase.execute({
             userId
         })
 
@@ -89,7 +101,7 @@ export class PatientController {
 
         const adminUserId = request.user.sub                
 
-        await this.patientService.updatePatientStatus({
+        await this.updatePatientStatusUseCase.execute({
             adminUserId,
             patientId: id,
             status
@@ -98,6 +110,5 @@ export class PatientController {
         return reply.status(204).send()
 
     }
-
 
 }
