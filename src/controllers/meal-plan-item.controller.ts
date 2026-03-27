@@ -1,11 +1,17 @@
-import { MealPlanItemService } from "../services/meal-plan-item.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
+import { MealPLanItemRepository } from "../repositories/meal-plan-item-repository.interface";
+import { CreateMealPlanItemUseCase } from "../use-cases/meal-plan-item/create-meal-plan-item.use-case";
+import { GetMealPlanItemUseCase } from "../use-cases/meal-plan-item/get-meal-plan-item.use-case";
 
 
 export class MealPlanItemController {
 
-    constructor(private mealPlanItemService: MealPlanItemService){}
+    constructor(
+        private mealPlanItemRepository: MealPLanItemRepository,
+        private createMealPlanItemUseCase = new CreateMealPlanItemUseCase(mealPlanItemRepository),
+        private getMealPlanItemUseCase = new GetMealPlanItemUseCase(mealPlanItemRepository)
+    ){}
 
     async create(request: FastifyRequest, reply: FastifyReply) {
         
@@ -25,7 +31,7 @@ export class MealPlanItemController {
 
         const adminUserId = request.user.sub
 
-        const mealPlanItem = await this.mealPlanItemService.create({
+        const mealPlanItem = await this.createMealPlanItemUseCase.execute({
             adminUserId,
             ...data
         })
@@ -43,7 +49,7 @@ export class MealPlanItemController {
 
         const userId = request.user.sub        
 
-        const mealPlanItem = await this.mealPlanItemService.getMealPlanItemByIdRequest(mealPlanItemId, userId)
+        const mealPlanItem = await this.getMealPlanItemUseCase.execute({mealPlanItemId, userId})
 
         return reply.status(200).send(mealPlanItem)
     }

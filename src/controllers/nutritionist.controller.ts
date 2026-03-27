@@ -1,10 +1,16 @@
-import { NutritionistProfileService } from "../services/nutritionist.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod"
+import { NutritionistRepository } from "../repositories/nutritionist-repository.interface";
+import { CreateNutritionistUseCase } from "../use-cases/nutritionist/create-nutritionist.use-case";
 
 
 export class NutritionistController {
-    constructor(private service: NutritionistProfileService){}
+    constructor(
+        private nutritionistRepository: NutritionistRepository,
+        private createNutritionistUseCase = new CreateNutritionistUseCase(nutritionistRepository),
+
+
+    ){}
     
     async register(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema = z.object({
@@ -19,7 +25,7 @@ export class NutritionistController {
         const userId = request.user.sub
 
 
-        const nutritionistProfile = await this.service.execute({
+        const nutritionistProfile = await this.createNutritionistUseCase.execute({
             userId,
             crn,
             clinic,
