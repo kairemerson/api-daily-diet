@@ -1,16 +1,8 @@
 import { prisma } from "../lib/prisma"
+import { BodyMetricsRepository, CreateBodyMetricsDTO } from "./body-metrics-repository.interface"
 
-interface CreateBodyMetricsData {
-    patientId: string
-    weight?: number
-    bodyFat?: number
-    muscleMass?: number  
-    recordedAt?: Date
-}
-
-
-export class BodyMetricsRepository {
-    async create(data: CreateBodyMetricsData) {
+export class PrismaBodyMetricsRepository implements BodyMetricsRepository {
+    async create(data: CreateBodyMetricsDTO) {
         return prisma.bodyMetrics.create({
             data
         })
