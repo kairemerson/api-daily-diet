@@ -3,12 +3,17 @@ import { verifyJWT } from "../middlewares/verify-jwt";
 import { FastifyInstance } from "fastify";
 import { PrismaPatientRepository } from "../repositories/patients.repository";
 import { PatientProfileService } from "../services/patient.service";
+import { CreatePatientUseCase } from "../use-cases/create-patient.use-case";
 
 
 export async function PatientRoutes(app: FastifyInstance) {
 
     const patientRepository = new PrismaPatientRepository()
-    const patientService = new PatientProfileService(patientRepository)
+
+    const createPatientUseCase = new CreatePatientUseCase(patientRepository)
+
+    const patientService = new PatientProfileService(createPatientUseCase,patientRepository)
+    
     const patientController = new PatientController(patientService)
 
     app.addHook("onRequest", verifyJWT)

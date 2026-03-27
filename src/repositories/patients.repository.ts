@@ -3,8 +3,6 @@ import { prisma } from "../lib/prisma"
 import { PatientStatus } from "@prisma/client"
 import { CreatePatientDTO, PatientRepository } from "./patient-repository.interface"
 
-
-
 export class PrismaPatientRepository implements PatientRepository {
     async create(data: CreatePatientDTO) {
         return prisma.$transaction(async (tx) => {
