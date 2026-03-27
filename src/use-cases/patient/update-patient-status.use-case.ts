@@ -1,7 +1,7 @@
 import { PatientStatus } from "@prisma/client";
-import { PatientRepository } from "../repositories/patient-repository.interface";
-import { prisma } from "../lib/prisma";
-import { AppError } from "../errors/app-error";
+import { PatientRepository } from "../../repositories/patient-repository.interface";
+import { prisma } from "../../lib/prisma";
+import { AppError } from "../../errors/app-error";
 
 export interface UpdatePatientStatusRequest {
   adminUserId: string

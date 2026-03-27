@@ -1,6 +1,6 @@
-import { AppError } from "../errors/app-error";
-import { prisma } from "../lib/prisma";
-import { PatientRepository } from "../repositories/patient-repository.interface";
+import { AppError } from "../../errors/app-error";
+import { prisma } from "../../lib/prisma";
+import { PatientRepository } from "../../repositories/patient-repository.interface";
 
 export interface ListPatientsByNutritionistRequest {
   userId: string;

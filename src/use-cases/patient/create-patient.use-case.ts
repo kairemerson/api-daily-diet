@@ -1,7 +1,7 @@
 
-import { AppError } from "../errors/app-error";
-import { PatientRepository } from "../repositories/patient-repository.interface";
-import { prisma } from "../lib/prisma";
+import { AppError } from "../../errors/app-error";
+import { PatientRepository } from "../../repositories/patient-repository.interface";
+import { prisma } from "../../lib/prisma";
 import bcrypt from "bcryptjs"
 
 export interface CreateDataRequest {

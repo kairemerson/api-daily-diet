@@ -1,7 +1,7 @@
-import { AppError } from "../errors/app-error";
-import { dateToLocalString, getLocalDateString } from "../helpers/build-dates";
-import { prisma } from "../lib/prisma";
-import { PatientRepository } from "../repositories/patient-repository.interface";
+import { AppError } from "../../errors/app-error";
+import { dateToLocalString, getLocalDateString } from "../../helpers/build-dates";
+import { prisma } from "../../lib/prisma";
+import { PatientRepository } from "../../repositories/patient-repository.interface";
 
 
 export interface GetPatientOwnDashboardRequest {

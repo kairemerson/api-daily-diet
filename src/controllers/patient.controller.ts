@@ -1,10 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod"
-import { CreatePatientUseCase } from "../use-cases/create-patient.use-case";
-import { GetPatientDashboardUseCase } from "../use-cases/get-patient-dashboard.use-case";
-import { GetPatientOwnDashboardUseCase } from "../use-cases/get-patient-own-dashboard.use-case";
-import { ListPatientByNutritionistUseCase } from "../use-cases/list-patient-by-nutritionist.use-case";
-import { UpdatePatientStatusUseCase } from "../use-cases/update-patient-status.use-case";
+import { CreatePatientUseCase } from "../use-cases/patient/create-patient.use-case";
+import { GetPatientDashboardUseCase } from "../use-cases/patient/get-patient-dashboard.use-case";
+import { GetPatientOwnDashboardUseCase } from "../use-cases/patient/get-patient-own-dashboard.use-case";
+import { ListPatientByNutritionistUseCase } from "../use-cases/patient/list-patient-by-nutritionist.use-case";
+import { UpdatePatientStatusUseCase } from "../use-cases/patient/update-patient-status.use-case";
 import { PrismaPatientRepository } from "../repositories/patients.repository";
 
 
