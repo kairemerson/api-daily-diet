@@ -1,10 +1,20 @@
-import { MealPlanService } from "../services/meal-plan.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
+import { MealPlanRepository } from "../repositories/meal-plan-repository.interface";
+import { CreateMealPlanUseCase } from "../use-cases/meal-plan/create-meal-plan.use-case";
+import { GetByPatientIdUseCase } from "../use-cases/meal-plan/get-by-patientId.use-case";
+import { GetByIdUseCase } from "../use-cases/meal-plan/get-by-id.use-case";
+import { UpdateMealPlanUseCase } from "../use-cases/meal-plan/update-meal-plan.use-case";
 
 export class MealPlanController {
 
-    constructor(private mealPlanService: MealPlanService){}
+    constructor(
+        private mealPlanRespository: MealPlanRepository,
+        private createMealPlanUseCase = new CreateMealPlanUseCase(mealPlanRespository),
+        private getByPatientIdUseCase = new GetByPatientIdUseCase(mealPlanRespository),
+        private getByIdUseCase = new GetByIdUseCase(mealPlanRespository),
+        private updateMealPlanUseCase = new UpdateMealPlanUseCase(mealPlanRespository)
+    ){}
 
     async create(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema =z.object({
@@ -23,7 +33,7 @@ export class MealPlanController {
 
         const user_id = request.user.sub
 
-        const mealPlan = await this.mealPlanService.create({adminUserId: user_id, ...data})
+        const mealPlan = await this.createMealPlanUseCase.execute({adminUserId: user_id, ...data})
 
         return reply.status(201).send(mealPlan)
     }
@@ -37,7 +47,7 @@ export class MealPlanController {
 
         const user_id = request.user.sub        
 
-        const mealPlans = await this.mealPlanService.findByPatientId({adminUserId: user_id, patientId})
+        const mealPlans = await this.getByPatientIdUseCase.execute({adminUserId: user_id, patientId})
 
         return reply.status(200).send(mealPlans)
 
@@ -52,7 +62,7 @@ export class MealPlanController {
 
         const user_id = request.user.sub        
 
-        const mealPlans = await this.mealPlanService.findById({adminUserId: user_id, mealPlanId})
+        const mealPlans = await this.getByIdUseCase.execute({adminUserId: user_id, mealPlanId})
 
         return reply.status(200).send(mealPlans)
 
@@ -81,7 +91,7 @@ export class MealPlanController {
         const user_id = request.user.sub
     
 
-        const mealPLan = await this.mealPlanService.update(user_id, id, data)
+        const mealPLan = await this.updateMealPlanUseCase.execute(user_id, id, data)
 
         return reply.status(200).send(mealPLan)
     }
