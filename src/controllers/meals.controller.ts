@@ -1,11 +1,24 @@
-// import { GetMealsMetricsService } from "@/services/get-meals-metrics.service";
-import { MealsService } from "../services/meals.service";
 import { FastifyReply, FastifyRequest } from "fastify";
 import {z} from "zod"
+import { MealRepository } from "../repositories/meal-repository.interface";
+import { CreateMealUseCase } from "../use-cases/meal/create-meal.use-case";
+import { ListByUserIdUseCase } from "../use-cases/meal/list-by-userId.use-case";
+import { GetMealByIdUseCase } from "../use-cases/meal/get-meal-by-id.use-case";
+import { GetMealByPatientIdUseCase } from "../use-cases/meal/get-meal-by-patientId.use-case";
+import { UpdateMealUseCase } from "../use-cases/meal/update-meal.use-case";
+import { DeleteMealUseCase } from "../use-cases/meal/delete-meal.use-case";
 
 
 export class MealsController {
-    constructor(private mealService: MealsService){}
+    constructor(
+        private mealRepository: MealRepository,
+        private createMealUseCase = new CreateMealUseCase(mealRepository),
+        private listByUserIdUseCase = new ListByUserIdUseCase(mealRepository),
+        private getMealByIdUseCase = new GetMealByIdUseCase(mealRepository),
+        private getMealByPatientIdUseCase = new GetMealByPatientIdUseCase(mealRepository),
+        private updateMealUseCase = new UpdateMealUseCase(mealRepository),
+        private deleteMealUseCase = new DeleteMealUseCase(mealRepository)
+    ){}
 
     async create(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema = z.object({
@@ -25,7 +38,7 @@ export class MealsController {
 
         const userId = request.user.sub        
 
-        const meal = await this.mealService.create(data, userId)
+        const meal = await this.createMealUseCase.execute(data, userId)
 
         return reply.status(201).send(meal)
     }
@@ -34,7 +47,7 @@ export class MealsController {
         const userId = request.user.sub
 
 
-        const meals = await this.mealService.listByUserId(userId)        
+        const meals = await this.listByUserIdUseCase.execute(userId)        
 
         return reply.status(200).send(meals)
     }
@@ -48,7 +61,7 @@ export class MealsController {
 
         const userId = request.user.sub
 
-        const meal = await this.mealService.getById(id, userId)
+        const meal = await this.getMealByIdUseCase.execute(id, userId)
 
         return reply.status(200).send(meal)
         
@@ -64,7 +77,7 @@ export class MealsController {
 
         const userId = request.user.sub
 
-        const meal = await this.mealService.getByPatientId(patientId, userId)
+        const meal = await this.getMealByPatientIdUseCase.execute(patientId, userId)
         
         return reply.status(200).send(meal)
         
@@ -93,7 +106,7 @@ export class MealsController {
 
         const userId = request.user.sub
 
-        const meal = await this.mealService.update(id, userId, data)
+        const meal = await this.updateMealUseCase.execute(id, userId, data)
             
         return reply.status(200).send(meal)
        
@@ -109,7 +122,7 @@ export class MealsController {
 
         const userId = request.user.sub
 
-        await this.mealService.delete(id, userId)
+        await this.deleteMealUseCase.execute(id, userId)
 
         return reply.status(204).send()
 
