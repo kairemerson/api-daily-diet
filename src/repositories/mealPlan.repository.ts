@@ -3,18 +3,29 @@ import { CreateMealPlanDTO, MealPlanRepository, MealPlanWithMealPlanItems, Updat
 
 export class PrismaMealPlanRepository implements MealPlanRepository {
   async create(data: CreateMealPlanDTO) {
-    return prisma.mealPlan.create({
-      data: {
-        patientId: data.patientId,
-        title: data.title,
-        description: data.description,
-        caloriesTarget: data.caloriesTarget,
-        proteinTarget: data.proteinTarget,
-        carbsTarget: data.carbsTarget,
-        fatTarget: data.fatTarget,
-        startDate: data.startDate,
-        endDate: data.endDate,
-      },
+    return prisma.$transaction(async (tx) => {
+      await tx.mealPlan.updateMany({
+        where: {
+          patientId: data.patientId
+        },
+        data: {
+          isActive: false
+        }
+      })
+
+      return tx.mealPlan.create({
+        data: {
+          patientId: data.patientId,
+          title: data.title,
+          description: data.description,
+          caloriesTarget: data.caloriesTarget,
+          proteinTarget: data.proteinTarget,
+          carbsTarget: data.carbsTarget,
+          fatTarget: data.fatTarget,
+          startDate: data.startDate,
+          endDate: data.endDate,
+        },
+      })
     })
   }
 
