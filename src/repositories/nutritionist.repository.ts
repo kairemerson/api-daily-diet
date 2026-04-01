@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma"
-import { CreateNutritionistDTO, NutritionistRepository } from "./nutritionist-repository.interface"
+import { CreateNutritionistDTO, NutritionistRepository, UpdateNutritionistDTO } from "./nutritionist-repository.interface"
 
 
 
@@ -9,8 +9,17 @@ export class PrismaNutritionistRepository implements NutritionistRepository {
     }
 
     async findByUserId(userId: string) {
-    return prisma.nutritionistProfile.findUnique({
-      where: { userId }
-    })
-  }
+      return prisma.nutritionistProfile.findUnique({
+        where: { userId }
+      })
+    }
+
+    async updateNutritionist(nutritionistId: string, data: UpdateNutritionistDTO) {
+      await prisma.nutritionistProfile.update({
+        where: {
+          id: nutritionistId
+        },
+        data
+      })
+    }
 }

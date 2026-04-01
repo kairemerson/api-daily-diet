@@ -3,6 +3,7 @@
 export interface NutritionistRepository {
     create(data: CreateNutritionistDTO): Promise<NutritionistProfile>
     findByUserId(userId: string): Promise<NutritionistProfile | null>
+    updateNutritionist(nutritionistId: string, data: UpdateNutritionistDTO): Promise<void>
 }
 
 export type NutritionistProfile = {
@@ -23,3 +24,11 @@ export type CreateNutritionistDTO = {
   clinic?: string
   phone?: string
 }
+
+export type UpdateNutritionistDTO = {
+  crn?: string
+  specialty?: string
+  clinic?: string
+  phone?: string
+}
+
