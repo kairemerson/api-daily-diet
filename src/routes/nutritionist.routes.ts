@@ -11,4 +11,6 @@ export async function NutritionistsRoutes(app: FastifyInstance) {
     app.addHook("onRequest", verifyJWT)
 
     app.post("/nutritionists/profile", nutritionistController.register.bind(nutritionistController))
+    app.get("/nutritionists/profile", nutritionistController.getNutritionist.bind(nutritionistController))
+    app.put("/nutritionists/profile", nutritionistController.update.bind(nutritionistController))
 }
