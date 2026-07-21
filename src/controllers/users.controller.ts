@@ -32,8 +32,9 @@ export class UsersController {
             email: z.email(),
             password: z.string().min(6)
         })
-
+        
         const {email, password} = bodySchema.parse(request.body)
+        console.log("chegou: ", email, password);
 
         const user = await this.loginUserUseCase.execute({email, password})
 
