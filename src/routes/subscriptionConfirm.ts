@@ -19,7 +19,7 @@ export async function subscriptionsConfirmRoutes(app: FastifyInstance) {
         }
 
         // Confirma o status real na Stripe antes de liberar
-        if (subscription.status === "active" || subscription.status === "trialing") {
+        if (["active", "trialing", "incomplete"].includes(subscription.status)) {
             await prisma.user.update({
                 where: { id: user.id },
                 data: { isPro: true },

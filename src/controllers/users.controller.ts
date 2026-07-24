@@ -34,7 +34,6 @@ export class UsersController {
         })
         
         const {email, password} = bodySchema.parse(request.body)
-        console.log("chegou: ", email, password);
 
         const user = await this.loginUserUseCase.execute({email, password})
 
