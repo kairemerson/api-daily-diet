@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { UsersController } from "../controllers/users.controller";
 import { PrismaUserRepository } from "../repositories/users.repository";
+import { verifyJWT } from "../middlewares/verify-jwt";
 
 export async function UsersRoutes(app: FastifyInstance) {
 
@@ -9,5 +10,9 @@ export async function UsersRoutes(app: FastifyInstance) {
 
     app.post("/users", usersController.register.bind(usersController))
     app.post("/sessions", usersController.login.bind(usersController))
+
+    app.get("/users/me", {onRequest: [verifyJWT]},
+        usersController.getUser.bind(usersController)
+    )
 
 }

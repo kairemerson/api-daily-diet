@@ -2,6 +2,7 @@
 export interface UserRepository {
     findByEmail(email: string): Promise<User | null>
     create(data: CreateUserDTO): Promise<User>
+    findById(id: string): Promise<User | null>
 }
 
 export type User = {
@@ -10,6 +11,8 @@ export type User = {
     email: string
     password: string
     role: "ADMIN" | "PATIENT"
+    isPro: boolean
+    stripeCustomerId: string | null
 }
 
 export type CreateUserDTO = {
