@@ -13,6 +13,7 @@ export type User = {
     role: "ADMIN" | "PATIENT"
     isPro: boolean
     stripeCustomerId: string | null
+    nextBillingDate: Date | null
 }
 
 export type CreateUserDTO = {

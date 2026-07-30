@@ -35,6 +35,7 @@ export async function subscriptionsRoutes(app: FastifyInstance) {
       items: [{ price: priceId }],
       payment_behavior: "default_incomplete",
       payment_settings: { save_default_payment_method: "on_subscription" },
+      metadata: { userId },
       expand: ["latest_invoice.confirmation_secret"],
     })
 

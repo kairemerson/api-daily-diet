@@ -21,6 +21,16 @@ export class GetUserUseCase {
         let planName = "FREE";
         let maxPatients = 1; 
 
+        let isSubscriptionExpired = false;
+
+        if (user.isPro && user.nextBillingDate) {
+          const currentDate = new Date();
+          // Se a data atual passou da data limite de cobrança (ex: hoje é dia 11 e o plano venceu dia 10)
+          if (currentDate > new Date(user.nextBillingDate)) {
+             isSubscriptionExpired = true;
+          }
+        }
+
         // Se o usuário for Pro e tiver uma conta na Stripe, buscamos a assinatura ativa dele
         if (user.isPro && user.stripeCustomerId) {
             const subscriptions = await stripe.subscriptions.list({
@@ -62,6 +72,7 @@ export class GetUserUseCase {
             plan: planName,
             maxPatients,
             currentPatientsCount,
+            isSubscriptionExpired
         };
     }
 }
