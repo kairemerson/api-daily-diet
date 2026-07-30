@@ -3,6 +3,7 @@ import {z} from "zod"
 import { CreateUserUseCase } from "../use-cases/users/create-user.use-case";
 import { UserRepository } from "../repositories/user-repository.interface";
 import { LoginUserUseCase } from "../use-cases/users/login-user.use-case";
+import { GetUserUseCase } from "../use-cases/users/get-user.use-case";
 
 export class UsersController {
 
@@ -10,6 +11,8 @@ export class UsersController {
         private userRepository: UserRepository,
         private createUserUseCase = new CreateUserUseCase(userRepository),
         private loginUserUseCase = new LoginUserUseCase(userRepository),
+        private getUserProfile = new GetUserUseCase(userRepository)
+
     ){}
 
     async register(request: FastifyRequest, reply: FastifyReply) {
@@ -49,5 +52,20 @@ export class UsersController {
 
         return reply.send({token, user})
 
+    }
+
+    async getUser(request: FastifyRequest, reply: FastifyReply) {
+        const userId = request.user.sub as string; 
+
+        try {
+        const user = await this.getUserProfile.execute({ userId });
+
+        // Remove a senha do retorno por segurança antes de enviar ao React Native
+        const { password, ...userWithoutPassword } = user;
+
+        return reply.status(200).send(userWithoutPassword);
+        } catch (error: any) {
+        return reply.status(404).send({ error: error.message });
+        }
     }
 }
