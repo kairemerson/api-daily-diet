@@ -1,7 +1,8 @@
 import { dateToLocalString } from "../helpers/build-dates"
 import { prisma } from "../lib/prisma"
 import { PatientStatus } from "@prisma/client"
-import { CreatePatientDTO, PatientRepository } from "./patient-repository.interface"
+import { CreatePatientDTO, PatientRepository, UpdateUserPatientProfileDTO, UserWithPatientProfile } from "./patient-repository.interface"
+import { AppError } from "../errors/app-error"
 
 export class PrismaPatientRepository implements PatientRepository {
     async create(data: CreatePatientDTO) {
@@ -111,5 +112,80 @@ export class PrismaPatientRepository implements PatientRepository {
         data: {status}
       })
     }
+
+    async findById(userId: string) {
+      const patientProfile  = await prisma.patientProfile.findUnique({
+          where: {
+              userId: userId,
+          },
+          select: {
+              id: true,
+              targetWeight: true,
+              observation: true,
+              birthDate: true,
+              height: true
+          },
+      });
+
+      return patientProfile
+
+    }
+
+    async updateUserAndPatientProfile(
+      userId: string, 
+      data: UpdateUserPatientProfileDTO,
+    ): Promise<UserWithPatientProfile> {
+      // Transação para garantir atomicidade
+      return await prisma.$transaction(async (tx) => {
+      // 1. Busca o ID do perfil associado ao userId
+      const existingProfile = await tx.patientProfile.findUnique({
+        where: { userId },
+        select: { id: true },
+      })
+
+      if (!existingProfile) {
+        throw new AppError("Perfil do paciente não encontrado.")
+      }
+
+      // 2. Atualiza os dados de acesso (User) se enviados
+      if (data.name || data.email) {
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            ...(data.name && { name: data.name }),
+            ...(data.email && { email: data.email }),
+          },
+        })
+      }
+
+      // 3. Atualiza os dados do perfil (PatientProfile)
+      const updatedProfile = await tx.patientProfile.update({
+        where: { id: existingProfile.id },
+        data: {
+          ...(data.birthDate !== undefined && { birthDate: data.birthDate }),
+          ...(data.height !== undefined && { height: data.height }),
+          ...(data.targetWeight !== undefined && { targetWeight: data.targetWeight }),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      })
+
+      // 4. Separa a entidade 'user' da entidade 'profile' para corresponder ao tipo
+      const { user, ...profile } = updatedProfile
+
+      return {
+        user,
+        profile,
+      }
+    })
+  }
 
 }
