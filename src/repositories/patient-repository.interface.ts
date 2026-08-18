@@ -4,6 +4,8 @@ export interface PatientRepository {
     create(data: CreatePatientDTO): Promise<UserWithPatientProfile>
     findManyWithAdherenceByNutritionistId(nutritionistId: string): Promise<PatientAdherenceDashboard>
     updatePatientStatus(patientId: string, status: PatientStatus): Promise<void>
+    findById(userId: string): Promise<PatientProfile | null>
+    updateUserAndPatientProfile(userId: string, data: UpdateUserPatientProfileDTO): Promise<UserWithPatientProfile>
 }
 
 export interface CreatePatientDTO {
@@ -23,13 +25,10 @@ export interface CreatePatientDTO {
 }
 
 export type UserWithPatientProfile = {
-     user: {
+    user: {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         name: string;
         email: string;
-        password: string;
         role: Role;
     };
     profile: {
@@ -89,3 +88,20 @@ export type PatientAdherenceDashboard = {
   mealStats: MealStatsByPatient[];
   lastActivity: LastActivityByPatient[];
 };
+
+export type PatientProfile = {
+  id: string;
+  birthDate: Date | null;
+  height: number | null;
+  targetWeight: number | null;
+  observation: string | null;
+
+}
+
+export interface UpdateUserPatientProfileDTO {
+  name?: string
+  email?: string
+  birthDate?: Date | null
+  height?: number | null
+  targetWeight?: number | null
+}

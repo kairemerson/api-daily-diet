@@ -6,17 +6,35 @@ import { GetPatientOwnDashboardUseCase } from "../use-cases/patient/get-patient-
 import { ListPatientByNutritionistUseCase } from "../use-cases/patient/list-patient-by-nutritionist.use-case";
 import { UpdatePatientStatusUseCase } from "../use-cases/patient/update-patient-status.use-case";
 import { PrismaPatientRepository } from "../repositories/patients.repository";
+import { PrismaBodyMetricsRepository } from "../repositories/body-metrics.repository";
+import { GetPatientProfileUseCase } from "../use-cases/patient/get-patient-profile.use-case";
+import { UpdatePatientProfileUseCase } from "../use-cases/patient/update-patient-profile.use-case";
 
 
 export class PatientController {
-    constructor(
-        private patientRepository: PrismaPatientRepository,
-        private createPatientUseCase = new CreatePatientUseCase(patientRepository),
-        private listPatientByNutritionistUseCase = new ListPatientByNutritionistUseCase(patientRepository),
-        private getPatientDashboardUseCase = new GetPatientDashboardUseCase(patientRepository),
-        private getPatientOwnDashboardUseCase = new GetPatientOwnDashboardUseCase(patientRepository),
-        private updatePatientStatusUseCase = new UpdatePatientStatusUseCase(patientRepository)
-    ) {}
+    private createPatientUseCase: CreatePatientUseCase;
+    private listPatientByNutritionistUseCase: ListPatientByNutritionistUseCase;
+    private getPatientDashboardUseCase: GetPatientDashboardUseCase;
+    private getPatientOwnDashboardUseCase: GetPatientOwnDashboardUseCase;
+    private updatePatientStatusUseCase: UpdatePatientStatusUseCase;
+    private getPatientProfileUseCase: GetPatientProfileUseCase;
+    private updatePatientProfileUseCase: UpdatePatientProfileUseCase;
+
+  constructor(
+    private patientRepository: PrismaPatientRepository,
+    private bodyMetricsRepository: PrismaBodyMetricsRepository
+    ) {
+        this.createPatientUseCase = new CreatePatientUseCase(this.patientRepository);
+        this.listPatientByNutritionistUseCase = new ListPatientByNutritionistUseCase(this.patientRepository);
+        this.getPatientDashboardUseCase = new GetPatientDashboardUseCase(
+        this.patientRepository,
+        this.bodyMetricsRepository
+        );
+        this.getPatientOwnDashboardUseCase = new GetPatientOwnDashboardUseCase(this.patientRepository);
+        this.updatePatientStatusUseCase = new UpdatePatientStatusUseCase(this.patientRepository);
+        this.getPatientProfileUseCase = new GetPatientProfileUseCase(this.patientRepository);
+        this.updatePatientProfileUseCase = new UpdatePatientProfileUseCase(this.patientRepository);
+    }
 
     async register(request: FastifyRequest, reply: FastifyReply) {
         const bodySchema = z.object({
@@ -108,6 +126,43 @@ export class PatientController {
         })
 
         return reply.status(204).send()
+
+    }
+
+    async getPatientProfile(request: FastifyRequest, reply: FastifyReply) {
+        const userId = request.user.sub
+
+        const patientProfile = await this.getPatientProfileUseCase.execute({
+            userId
+        })
+
+        return reply.status(200).send(patientProfile)
+    }
+
+    async updatePatientProfile(request: FastifyRequest, reply: FastifyReply) {
+
+        const bodySchema = z.object({
+            name: z.string(),
+            email: z.string().email(),
+            birthDate: z.string().optional(),
+            height: z.number().optional(),
+            targetWeight: z.number().optional(),
+        })
+        
+        const {name, email, birthDate, height, targetWeight} = bodySchema.parse(request.body)     
+
+        const userId = request.user.sub
+
+        const patientProfile = await this.updatePatientProfileUseCase.execute({
+            userId,
+            name,
+            email,
+            birthDate,
+            height,
+            targetWeight
+        })
+
+        return reply.status(200).send(patientProfile)
 
     }
 
